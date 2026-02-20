@@ -27,6 +27,19 @@ parser.add_argument('--max_iters', type=int, default=1000)
 parser.add_argument('--sampling_mode', type=str, default='one_sided', choices=['one_sided', 'symmetric'])
 parser.add_argument('--residual_loss', type=str, default='mse', choices=['mse', 'huber', 'pseudo_huber'])
 parser.add_argument('--huber_delta', type=float, default=0.05)
+parser.add_argument('--use_curriculum', action='store_true')
+parser.add_argument('--curriculum_switch_ratio', type=float, default=0.6)
+parser.add_argument('--curriculum_stage1_loss', type=str, default='mse', choices=['mse', 'huber', 'pseudo_huber'])
+parser.add_argument('--curriculum_stage2_loss', type=str, default='pseudo_huber',
+                    choices=['mse', 'huber', 'pseudo_huber'])
+parser.add_argument('--curriculum_stage1_delta', type=float, default=0.05)
+parser.add_argument('--curriculum_stage2_delta', type=float, default=0.5)
+parser.add_argument('--curriculum_stage1_sampling', type=str, default='one_sided',
+                    choices=['one_sided', 'symmetric'])
+parser.add_argument('--curriculum_stage2_sampling', type=str, default='one_sided',
+                    choices=['one_sided', 'symmetric'])
+parser.add_argument('--curriculum_stage1_sample_num', type=int, default=1)
+parser.add_argument('--curriculum_stage2_sample_num', type=int, default=4)
 args = parser.parse_args()
 device = resolve_device(args.device)
 
@@ -87,6 +100,21 @@ def flatten_gradients(model, device):
     return torch.cat(grads)
 
 
+def compute_residual_loss(residual, loss_type, delta):
+    if loss_type == 'huber':
+        return F.huber_loss(
+            residual,
+            torch.zeros_like(residual),
+            delta=delta,
+            reduction='mean',
+        )
+    if loss_type == 'pseudo_huber':
+        d = max(delta, 1e-12)
+        scaled = residual / d
+        return torch.mean((d ** 2) * (torch.sqrt(1.0 + scaled ** 2) - 1.0))
+    return torch.mean(residual ** 2)
+
+
 if args.model == 'KAN':
     model = get_model(args).Model(width=[2, 5, 1], grid=5, k=3, grid_eps=1.0, \
                                   noise_scale_base=0.25, device=device).to(device)
@@ -113,8 +141,39 @@ past_iterations = args.past_iterations
 gradient_list_overall = []
 gradient_list_temp = []
 gradient_variance = 1
+switch_iter = max(1, int(args.max_iters * np.clip(args.curriculum_switch_ratio, 0.0, 1.0)))
+
+if args.use_curriculum:
+    print(
+        f'Curriculum enabled: switch@{switch_iter}/{args.max_iters}, '
+        f'stage1(loss={args.curriculum_stage1_loss}, delta={args.curriculum_stage1_delta}, '
+        f'sampling={args.curriculum_stage1_sampling}, sample_num={max(1, args.curriculum_stage1_sample_num)}), '
+        f'stage2(loss={args.curriculum_stage2_loss}, delta={args.curriculum_stage2_delta}, '
+        f'sampling={args.curriculum_stage2_sampling}, sample_num={max(1, args.curriculum_stage2_sample_num)})'
+    )
+else:
+    print(
+        f'Fixed training: loss={args.residual_loss}, delta={args.huber_delta}, '
+        f'sampling={args.sampling_mode}, sample_num={sample_num}'
+    )
 
 for i in tqdm(range(args.max_iters)):
+    if args.use_curriculum and i < switch_iter:
+        iter_loss_type = args.curriculum_stage1_loss
+        iter_delta = args.curriculum_stage1_delta
+        iter_sampling = args.curriculum_stage1_sampling
+        iter_sample_num = max(1, args.curriculum_stage1_sample_num)
+    elif args.use_curriculum:
+        iter_loss_type = args.curriculum_stage2_loss
+        iter_delta = args.curriculum_stage2_delta
+        iter_sampling = args.curriculum_stage2_sampling
+        iter_sample_num = max(1, args.curriculum_stage2_sample_num)
+    else:
+        iter_loss_type = args.residual_loss
+        iter_delta = args.huber_delta
+        iter_sampling = args.sampling_mode
+        iter_sample_num = sample_num
+
     ###### Region Optimization with Monte Carlo Approximation ######
     def closure():
         region_radius = np.clip(initial_region / gradient_variance, a_min=0, a_max=0.01)
@@ -122,8 +181,8 @@ for i in tqdm(range(args.max_iters)):
             x_res,
             t_res,
             region_radius=region_radius,
-            sample_num=sample_num,
-            sampling_mode=args.sampling_mode,
+            sample_num=iter_sample_num,
+            sampling_mode=iter_sampling,
             x_range=(x_min, x_max),
             t_range=(t_min, t_max),
         )
@@ -143,19 +202,7 @@ for i in tqdm(range(args.max_iters)):
                                 create_graph=True)[0]
 
         residual = u_t - 5 * pred_res * (1 - pred_res)
-        if args.residual_loss == 'huber':
-            loss_res = F.huber_loss(
-                residual,
-                torch.zeros_like(residual),
-                delta=args.huber_delta,
-                reduction='mean',
-            )
-        elif args.residual_loss == 'pseudo_huber':
-            delta = max(args.huber_delta, 1e-12)
-            scaled = residual / delta
-            loss_res = torch.mean((delta ** 2) * (torch.sqrt(1.0 + scaled ** 2) - 1.0))
-        else:
-            loss_res = torch.mean(residual ** 2)
+        loss_res = compute_residual_loss(residual, iter_loss_type, iter_delta)
         loss_bc = torch.mean((pred_upper - pred_lower) ** 2)
         loss_ic = torch.mean(
             (pred_left[:, 0] - torch.exp(- (x_left[:, 0] - torch.pi) ** 2 / (2 * (torch.pi / 4) ** 2))) ** 2)
