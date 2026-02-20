@@ -27,6 +27,8 @@ parser.add_argument('--max_iters', type=int, default=1000)
 parser.add_argument('--sampling_mode', type=str, default='one_sided', choices=['one_sided', 'symmetric'])
 parser.add_argument('--residual_loss', type=str, default='mse', choices=['mse', 'huber', 'pseudo_huber'])
 parser.add_argument('--huber_delta', type=float, default=0.05)
+parser.add_argument('--ff_dim', type=int, default=64)
+parser.add_argument('--ff_scale', type=float, default=1.0)
 parser.add_argument('--use_curriculum', action='store_true')
 parser.add_argument('--curriculum_switch_ratio', type=float, default=0.6)
 parser.add_argument('--curriculum_stage1_loss', type=str, default='mse', choices=['mse', 'huber', 'pseudo_huber'])
@@ -123,6 +125,16 @@ elif args.model == 'QRes':
     model.apply(init_weights)
 elif args.model == 'PINNsFormer' or args.model == 'PINNsFormer_Enc_Only':
     model = get_model(args).Model(in_dim=2, hidden_dim=32, out_dim=1, num_layer=1).to(device)
+    model.apply(init_weights)
+elif args.model == 'PINN_ResFF':
+    model = get_model(args).Model(
+        in_dim=2,
+        hidden_dim=512,
+        out_dim=1,
+        num_layer=4,
+        ff_dim=args.ff_dim,
+        ff_scale=args.ff_scale,
+    ).to(device)
     model.apply(init_weights)
 else:
     model = get_model(args).Model(in_dim=2, hidden_dim=512, out_dim=1, num_layer=4).to(device)
