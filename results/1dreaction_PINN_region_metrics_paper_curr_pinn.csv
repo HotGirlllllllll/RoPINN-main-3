@@ -1,0 +1,7 @@
+metric,value
+relative_l1,0.0436730415
+relative_l2,0.0758954931
+loss_0,0.0000277877
+loss_1,0.0000001077
+loss_2,0.0000205208
+train_loss,0.0000484162

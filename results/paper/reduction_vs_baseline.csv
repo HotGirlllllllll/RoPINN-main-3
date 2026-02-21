@@ -1,0 +1,5 @@
+run,l1_reduction_percent,l2_reduction_percent
+paper_ablate_resff_only_1000,88.2901,86.0276
+paper_best_reaction_1000,88.1638,85.9130
+paper_base_reaction_1000,0.0000,0.0000
+paper_curr_pinn_reaction_1000,-162.6631,-148.4044
