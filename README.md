@@ -49,6 +49,14 @@ bash scripts/convection_point.sh # canonical point optimization
 bash scripts/convection_region.sh # RoPINN: region optimization
 ```
 
+For paper-oriented reporting on the 1D reaction benchmark, run:
+
+```shell
+bash scripts/paper_reaction_suite.sh
+```
+
+This script provides live progress, saves logs for each run, and generates `results/paper/summary.csv`, `results/paper/summary.md`, and `results/paper/summary_bar.pdf`.
+
 Specifically, we have included the following PINN models in this repo:
 
 - [x] PINN (Journal of Computational Physics 2019) [[Paper]](https://github.com/maziarraissi/PINNs)

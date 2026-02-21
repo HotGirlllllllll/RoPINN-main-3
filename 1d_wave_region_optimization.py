@@ -26,8 +26,18 @@ parser.add_argument('--max_iters', type=int, default=1000)
 parser.add_argument('--sampling_mode', type=str, default='one_sided', choices=['one_sided', 'symmetric'])
 parser.add_argument('--residual_loss', type=str, default='mse', choices=['mse', 'huber'])
 parser.add_argument('--huber_delta', type=float, default=0.05)
+parser.add_argument('--run_tag', type=str, default='')
+parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
 device = resolve_device(args.device)
+run_tag = ''.join(ch if ch.isalnum() or ch in ('-', '_', '.') else '_' for ch in args.run_tag.strip())
+
+
+def tagged_path(path):
+    if not run_tag:
+        return path
+    root, ext = os.path.splitext(path)
+    return f'{root}_{run_tag}{ext}'
 
 x_min, x_max = 0.0, 1.0
 t_min, t_max = 0.0, 1.0
@@ -196,7 +206,28 @@ print('Train Loss: {:4f}'.format(np.sum(loss_track[-1])))
 
 if not os.path.exists('./results/'):
     os.makedirs('./results/')
-torch.save(model.state_dict(), f'./results/1dwave_{args.model}_region.pt')
+torch.save(model.state_dict(), tagged_path(f'./results/1dwave_{args.model}_region.pt'))
+
+if args.paper_outputs:
+    loss_arr = np.array(loss_track, dtype=np.float64)
+    total_loss = np.sum(loss_arr, axis=1, keepdims=True)
+    loss_dump = np.concatenate([loss_arr, total_loss], axis=1)
+    np.savetxt(
+        tagged_path(f'./results/1dwave_{args.model}_region_loss.csv'),
+        loss_dump,
+        delimiter=',',
+        header='loss_0,loss_1,loss_2,total_loss',
+        comments='',
+    )
+
+    plt.figure(figsize=(5, 3))
+    plt.plot(loss_dump[:, -1], color='tab:blue')
+    plt.yscale('log')
+    plt.xlabel('Iteration')
+    plt.ylabel('Total Loss (log)')
+    plt.title('Training Loss Curve')
+    plt.tight_layout()
+    plt.savefig(tagged_path(f'./results/1dwave_{args.model}_region_optimization_loss.pdf'), bbox_inches='tight')
 
 # Visualize PINNs
 if args.model == 'PINNsFormer' or args.model == 'PINNsFormer_Enc_Only':
@@ -225,6 +256,16 @@ rl2 = np.sqrt(np.sum((u - pred) ** 2) / np.sum(u ** 2))
 print('relative L1 error: {:4f}'.format(rl1))
 print('relative L2 error: {:4f}'.format(rl2))
 
+if args.paper_outputs:
+    with open(tagged_path(f'./results/1dwave_{args.model}_region_metrics.csv'), 'w', encoding='utf-8') as fp:
+        fp.write('metric,value\n')
+        fp.write(f'relative_l1,{rl1:.10f}\n')
+        fp.write(f'relative_l2,{rl2:.10f}\n')
+        fp.write(f'loss_0,{loss_track[-1][0]:.10f}\n')
+        fp.write(f'loss_1,{loss_track[-1][1]:.10f}\n')
+        fp.write(f'loss_2,{loss_track[-1][2]:.10f}\n')
+        fp.write(f'train_loss,{np.sum(loss_track[-1]):.10f}\n')
+
 plt.figure(figsize=(4, 3))
 plt.imshow(pred, aspect='equal')
 plt.xlabel('x')
@@ -233,7 +274,7 @@ plt.title('Predicted u(x,t)')
 plt.colorbar()
 plt.tight_layout()
 plt.axis('off')
-plt.savefig(f'./results/1dwave_{args.model}_region_optimization_pred.pdf', bbox_inches='tight')
+plt.savefig(tagged_path(f'./results/1dwave_{args.model}_region_optimization_pred.pdf'), bbox_inches='tight')
 
 plt.figure(figsize=(4, 3))
 plt.imshow(u, aspect='equal')
@@ -243,7 +284,7 @@ plt.title('Exact u(x,t)')
 plt.colorbar()
 plt.tight_layout()
 plt.axis('off')
-plt.savefig('./results/1dwave_exact.pdf', bbox_inches='tight')
+plt.savefig(tagged_path('./results/1dwave_exact.pdf'), bbox_inches='tight')
 
 plt.figure(figsize=(4, 3))
 plt.imshow(pred - u, aspect='equal', cmap='coolwarm', vmin=-0.3, vmax=0.3)
@@ -253,4 +294,4 @@ plt.title('Absolute Error')
 plt.colorbar()
 plt.tight_layout()
 plt.axis('off')
-plt.savefig(f'./results/1dwave_{args.model}_region_optimization_error.pdf', bbox_inches='tight')
+plt.savefig(tagged_path(f'./results/1dwave_{args.model}_region_optimization_error.pdf'), bbox_inches='tight')
