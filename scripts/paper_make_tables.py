@@ -33,7 +33,6 @@ REACTION_MAIN_RUNS = [
     ("paper_base_reaction_1000", "Original RoPINN PINN baseline (backup)"),
     ("paper_curr_pinn_reaction_1000", "Current PINN (modified branch)"),
     ("paper_ablate_resff_only_1000", "RoPINN-ResFF (ours)"),
-    ("paper_best_reaction_1000", "RoPINN-ResFF + curriculum (ours)"),
 ]
 
 

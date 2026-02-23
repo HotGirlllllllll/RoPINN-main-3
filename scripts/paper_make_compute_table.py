@@ -27,6 +27,8 @@ def method_label(method: str) -> str:
     m = method.strip().lower()
     if m == "baseline":
         return "PINN baseline"
+    if m == "baseline_capmatch":
+        return "PINN baseline (capacity-matched)"
     if m == "ours":
         return "RoPINN-ResFF (ours)"
     return method
@@ -113,7 +115,7 @@ def main() -> None:
         grouped[(r["task"].strip().lower(), r["method"].strip().lower())].append(r)
 
     order_tasks = ["reaction", "wave", "convection"]
-    order_methods = ["baseline", "ours"]
+    order_methods = ["baseline", "baseline_capmatch", "ours"]
 
     summary_rows: List[Dict[str, str]] = []
     for task in order_tasks:
@@ -218,4 +220,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

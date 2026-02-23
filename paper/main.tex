@@ -7,6 +7,10 @@
 \usepackage{float}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
 
+\floatstyle{plain}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithm}
+
 \setlength{\parskip}{0pt}
 \setlength{\parindent}{1.5em}
 \pagestyle{empty}
@@ -49,7 +53,7 @@ $^{*}$Corresponding author: your-email@domain.com\par}
 {\fontsize{11pt}{13pt}\selectfont\bfseries ABSTRACT}
 \end{center}
 \noindent
-Physics-informed neural networks (PINNs) provide a mesh-free framework for solving PDEs, yet they often exhibit spectral bias and optimization instability under finite collocation sampling. RoPINN partially alleviates this issue by enforcing PDE constraints over local neighborhoods rather than isolated points. We present RoPINN-ResFF, an architecture-level extension of RoPINN that combines a residual multilayer perceptron backbone with fixed random Fourier feature embedding. We further evaluate an optional two-stage curriculum as an auxiliary training policy, not as the primary source of improvement. Under a fixed budget of 1000 iterations, we report paired multi-seed results on reaction, wave, and convection benchmarks (reaction: 11 seeds; wave/convection: 5 seeds). On reaction, mean relative L1/L2 decrease from 0.204406/0.223945 (baseline) to 0.003313/0.008480 (ours), with exact paired randomization p-values of 0.00098 for both metrics. On wave, mean L1/L2 decrease from 0.060335/0.062967 to 0.011916/0.012183. On convection, mean L1/L2 increase from 0.619487/0.699839 to 1.015963/1.039029. To assess budget sensitivity, we additionally run reaction at 3000 and 5000 iterations (3 paired seeds), where improvements remain stable (L1/L2 reductions: 88.53\%/84.28\% at 3000 and 88.64\%/84.44\% at 5000). Ablation indicates that the dominant gain is driven by the backbone change, while curriculum effects are limited in the current setting. Overall, the empirical evidence supports a task-conditional conclusion rather than universal gains across PDE types.
+Physics-informed neural networks (PINNs) provide a mesh-free framework for solving PDEs, yet they often exhibit spectral bias and optimization instability under finite collocation sampling. RoPINN partially alleviates this issue by enforcing PDE constraints over local neighborhoods rather than isolated points. We present RoPINN-ResFF, an architecture-level extension of RoPINN that combines a residual multilayer perceptron backbone with fixed random Fourier feature embedding. Under a fixed budget of 1000 iterations, we report paired multi-seed results on reaction, wave, and convection benchmarks (reaction: 11 seeds; wave/convection: 5 seeds). On reaction, mean relative L1/L2 decrease from 0.204406/0.223945 (baseline) to 0.003313/0.008480 (ours), with exact paired randomization p-values of 0.00098 for both metrics. On wave, mean L1/L2 decrease from 0.060335/0.062967 to 0.011916/0.012183. On convection, mean L1/L2 increase from 0.619487/0.699839 to 1.015963/1.039029. To assess budget sensitivity, we additionally run reaction at 3000 and 5000 iterations (3 paired seeds), where improvements remain stable (L1/L2 reductions: 88.53\%/84.28\% at 3000 and 88.64\%/84.44\% at 5000). Ablation indicates that the dominant gain is driven by the backbone change. Overall, the empirical evidence supports a task-conditional conclusion rather than universal gains across PDE types.
 
 \vspace{0.5em}
 \noindent\textbf{Keywords:} physics-informed neural networks, RoPINN, Fourier features, PDE solver, region optimization.

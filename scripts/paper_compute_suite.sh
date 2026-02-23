@@ -11,6 +11,7 @@ FF_DIM="${FF_DIM:-64}"
 FF_SCALE="${FF_SCALE:-0.5}"
 MPL_DIR="${MPLCONFIGDIR:-/tmp/mpl}"
 RESET_CSV="${RESET_CSV:-0}"
+RUN_CAPMATCH="${RUN_CAPMATCH:-1}"
 
 mkdir -p "${RESULTS_DIR}"
 
@@ -78,6 +79,10 @@ PY
 # Reaction
 run_case "reaction" "baseline" "${MAX_ITERS}" \
 "python -u \"${BASELINE_DIR}/1d_reaction_region_optimization.py\" --model PINN --device ${DEVICE}"
+if [[ "${RUN_CAPMATCH}" == "1" ]]; then
+  run_case "reaction" "baseline_capmatch" "${MAX_ITERS}" \
+  "python -u \"${ROOT_DIR}/1d_reaction_region_optimization.py\" --model PINN --device ${DEVICE} --seed ${SEED} --max_iters ${MAX_ITERS} --match_pinn_to_resff --pinn_num_layer 4 --ff_dim ${FF_DIM} --ff_scale ${FF_SCALE}"
+fi
 run_case "reaction" "ours" "${MAX_ITERS}" \
 "python -u \"${ROOT_DIR}/1d_reaction_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${SEED} --max_iters ${MAX_ITERS} --ff_dim ${FF_DIM} --ff_scale ${FF_SCALE}"
 

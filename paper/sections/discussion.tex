@@ -12,15 +12,5 @@ The method should be presented as a \textbf{task-conditional enhancement} of RoP
 \end{itemize}
 This positioning is scientifically stronger than claiming universal superiority. In addition, reaction budget-sensitivity runs (3000/5000 iterations) indicate that gains persist beyond the 1000-iteration setting.
 
-\subsection{Role of Curriculum}
-Our ablation evidence does not support positioning curriculum as the primary source of gains. In the reaction single-run comparison, RoPINN-ResFF without curriculum is marginally better than the curriculum variant. Therefore, curriculum is retained as an optional training policy and sensitivity axis, while the principal empirical contribution is attributed to the backbone change.
-
-\subsection{Submission-Ready Improvement Plan}
-For a stronger final ICPQC submission, we recommend:
-\begin{itemize}
-  \item extending wave/convection seed counts to match the reaction protocol (already 11 seeds) for balanced statistical power across tasks;
-  \item additional convection-focused ablations (sampling mode, sample count, and architecture variants);
-  \item extending budget-sensitivity checks from reaction to wave and convection, together with fixed wall-time accounting, to complete cross-task fairness analysis.
-\end{itemize}
-
-These additions would strengthen the empirical completeness of the final submission.
+\subsection{Limitations and Future Work}
+The current empirical scope remains limited in three aspects. First, seed counts are unbalanced across tasks (reaction uses more paired seeds than wave/convection), which limits cross-task statistical symmetry. Second, convection underperformance is currently characterized but not yet fully resolved by a validated task-specific inductive bias. Third, compute profiling is currently centered on reaction and should be extended to wave and convection for complete cross-task fairness accounting. Addressing these points is part of our ongoing work.

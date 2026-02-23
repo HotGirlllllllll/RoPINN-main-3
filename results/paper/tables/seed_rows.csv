@@ -10,7 +10,6 @@ reaction,baseline,7,0.045121,0.077776,results/mseed_react_base_s7.log
 reaction,baseline,8,0.034742,0.061446,results/mseed_react_base_s8.log
 reaction,baseline,9,0.97519,0.973387,results/mseed_react_base_s9.log
 reaction,baseline,10,0.037015,0.065983,results/mseed_react_base_s10.log
-reaction,baseline,11,,,results/mseed_react_base_s11.log
 reaction,ours,0,0.001947,0.004269,results/mseed_react_resff_s0.log
 reaction,ours,1,0.003363,0.007773,results/mseed_react_resff_s1.log
 reaction,ours,2,0.003617,0.010086,results/mseed_react_resff_s2.log

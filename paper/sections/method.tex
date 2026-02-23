@@ -30,25 +30,28 @@ h_{k+1}=\tanh\left(h_k + W_{k,2}\tanh(W_{k,1}h_k+b_{k,1})+b_{k,2}\right),
 \end{equation}
 and a final linear readout produces $u_\theta(x,t)$. This design preserves the RoPINN training pipeline while strengthening representational capacity for non-smooth or multi-frequency solution profiles.
 
-\begin{figure}[H]
+\begin{algorithm}[H]
 \centering
-\includegraphics[width=0.82\linewidth]{../pic/algorithm.png}
-\caption{Overall workflow of the region-optimization pipeline and the proposed RoPINN-ResFF integration.}
-\label{fig:method-workflow}
-\end{figure}
-
-\subsection{Optional Curriculum Policy (Auxiliary)}
-We additionally implement a two-stage curriculum (\texttt{--use\_curriculum}) as an optional policy with switch iteration
-$T_s=\lfloor \rho T \rfloor$ (\texttt{curriculum\_switch\_ratio}).
-Stage 1 uses conservative regional sampling (smaller \texttt{sample\_num}) for stable initialization, while Stage 2 increases sampling intensity for finer fitting.
-
-In the best reaction configuration, both stages use MSE residual loss with one-sided sampling:
-\begin{itemize}
-  \item Stage 1: \texttt{sample\_num=1};
-  \item Stage 2: \texttt{sample\_num=6};
-  \item switch ratio $\rho=0.7$.
-\end{itemize}
-In this work, curriculum is treated as a secondary control variable for sensitivity analysis rather than a core innovation claim.
+\caption{RoPINN-ResFF training with region optimization.}
+\label{alg:ropinn-training}
+\begin{tabular}{p{0.95\linewidth}}
+\toprule
+\textbf{Input:} Collocation set $\mathcal{D}$, initial radius $r_0$, max radius $r_{\max}$, iterations $T$, model parameters $\theta$. \\
+\textbf{Output:} Trained parameters $\theta^\star$. \\
+1: Initialize $\theta$, optimizer state, and gradient-history buffer $\mathcal{G} \leftarrow \emptyset$. \\
+2: Sample residual/boundary/initial points from $\mathcal{D}$. \\
+3: Set normalized gradient-variance estimate $v_g \leftarrow 1$. \\
+4: \textbf{for} $t=0$ \textbf{to} $T-1$ \textbf{do} \\
+\quad 5: Compute trust-region radius $r_t=\mathrm{clip}(r_0/v_g, 0, r_{\max})$. \\
+\quad 6: Draw regional perturbations around collocation points (one-sided or symmetric). \\
+\quad 7: Evaluate PDE residual, boundary loss, and initial loss; form total loss $\mathcal{L}_t$. \\
+\quad 8: Update $\theta$ via LBFGS (strong-Wolfe line search). \\
+\quad 9: Update $\mathcal{G}$ and recompute $v_g$ from recent flattened gradients. \\
+10: \textbf{end for} \\
+11: Return $\theta^\star \leftarrow \theta$. \\
+\bottomrule
+\end{tabular}
+\end{algorithm}
 
 \subsection{Loss Function Choices}
-The code supports MSE, Huber, and pseudo-Huber residual penalties. The main paper configuration uses MSE for all stages to keep consistency with the original baseline and isolate the effect of architectural changes. Boundary and initial terms remain squared losses.
+The code supports MSE, Huber, and pseudo-Huber residual penalties. The main paper configuration uses MSE to keep consistency with the original baseline and isolate the effect of architectural changes. Boundary and initial terms remain squared losses.

@@ -1,13 +1,13 @@
 \begin{table}[H]
 \centering
-\caption{Compute accounting under equal training budget (1000 iterations).}
+\caption{Compute accounting on the reaction benchmark (1000 iterations, seed 0, same CUDA device).}
 \label{tab:compute-accounting}
 \begin{tabular}{llccc}
 \toprule
 Task & Method & Params & Wall-time (s) & Sec/iter \\
 \midrule
-Pending & Pending & NA & NA & NA \\
+Reaction & PINN baseline & 527,361 & 335.0 & 0.3350 \\
+Reaction & RoPINN-ResFF (ours) & 1,642,497 & 445.0 & 0.4450 \\
 \bottomrule
 \end{tabular}
 \end{table}
-

@@ -4,12 +4,11 @@ Physics-informed neural networks (PINNs) provide a mesh-free framework for solvi
 
 RoPINN mitigates this issue by replacing pointwise residual training with region-wise optimization around collocation points, estimated via Monte Carlo sampling and trust-region calibration \cite{ropinn2024}. Although this design strengthens local training signals, final performance still depends heavily on backbone expressivity and optimization dynamics.
 
-This paper targets that remaining bottleneck. We propose \textbf{RoPINN-ResFF}, a drop-in backbone upgrade for RoPINN that combines residual MLP blocks with random Fourier feature embedding. We additionally include an optional two-stage curriculum over regional sampling intensity as an auxiliary training policy. The goal is to improve representational capacity and training stability without altering RoPINN's core region-optimization principle.
+This paper targets that remaining bottleneck. We propose \textbf{RoPINN-ResFF}, a drop-in backbone upgrade for RoPINN that combines residual MLP blocks with random Fourier feature embedding. The goal is to improve representational capacity and training stability without altering RoPINN's core region-optimization principle.
 
 \textbf{Contributions.}
 \begin{itemize}
   \item We introduce a residual Fourier-feature backbone that integrates directly into existing RoPINN scripts and training loops.
-  \item We provide controlled ablations that separate backbone effects from curriculum effects, showing that performance gains are primarily driven by the backbone upgrade in our setup.
-  \item We include an optional curriculum schedule as a practical training knob and report its limited incremental benefit transparently.
+  \item We provide controlled ablations that isolate backbone effects and show that performance gains are primarily driven by the backbone upgrade in our setup.
   \item We present reproducible fixed-budget evaluations, including both successful transfer (reaction, wave) and a negative case (convection), to clarify the practical scope of the method.
 \end{itemize}

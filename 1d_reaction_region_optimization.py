@@ -24,19 +24,9 @@ parser.add_argument('--residual_loss', type=str, default='mse', choices=['mse', 
 parser.add_argument('--huber_delta', type=float, default=0.05)
 parser.add_argument('--ff_dim', type=int, default=64)
 parser.add_argument('--ff_scale', type=float, default=1.0)
-parser.add_argument('--use_curriculum', action='store_true')
-parser.add_argument('--curriculum_switch_ratio', type=float, default=0.6)
-parser.add_argument('--curriculum_stage1_loss', type=str, default='mse', choices=['mse', 'huber', 'pseudo_huber'])
-parser.add_argument('--curriculum_stage2_loss', type=str, default='pseudo_huber',
-                    choices=['mse', 'huber', 'pseudo_huber'])
-parser.add_argument('--curriculum_stage1_delta', type=float, default=0.05)
-parser.add_argument('--curriculum_stage2_delta', type=float, default=0.5)
-parser.add_argument('--curriculum_stage1_sampling', type=str, default='one_sided',
-                    choices=['one_sided', 'symmetric'])
-parser.add_argument('--curriculum_stage2_sampling', type=str, default='one_sided',
-                    choices=['one_sided', 'symmetric'])
-parser.add_argument('--curriculum_stage1_sample_num', type=int, default=1)
-parser.add_argument('--curriculum_stage2_sample_num', type=int, default=4)
+parser.add_argument('--pinn_hidden_dim', type=int, default=512)
+parser.add_argument('--pinn_num_layer', type=int, default=4)
+parser.add_argument('--match_pinn_to_resff', action='store_true')
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -131,6 +121,43 @@ def compute_residual_loss(residual, loss_type, delta):
     return torch.mean(residual ** 2)
 
 
+def pinn_param_count(hidden_dim, num_layer, in_dim=2, out_dim=1):
+    # PINN layout in models/PINN.py:
+    # [in -> hidden] + (num_layer-2)*[hidden -> hidden] + [hidden -> out]
+    hidden_dim = int(hidden_dim)
+    num_layer = int(num_layer)
+    if hidden_dim < 2:
+        hidden_dim = 2
+    if num_layer < 2:
+        num_layer = 2
+    first = in_dim * hidden_dim + hidden_dim
+    middle = max(0, num_layer - 2) * (hidden_dim * hidden_dim + hidden_dim)
+    last = hidden_dim * out_dim + out_dim
+    return first + middle + last
+
+
+def match_pinn_hidden_dim(target_params, num_layer, in_dim=2, out_dim=1):
+    # Find a PINN width whose parameter count is closest to target_params.
+    target_params = int(target_params)
+    num_layer = max(2, int(num_layer))
+    if target_params <= 0:
+        return 2
+
+    hi = 2
+    while pinn_param_count(hi, num_layer, in_dim=in_dim, out_dim=out_dim) < target_params and hi < 32768:
+        hi *= 2
+    lo = max(2, hi // 2)
+
+    best_w = lo
+    best_gap = abs(pinn_param_count(lo, num_layer, in_dim=in_dim, out_dim=out_dim) - target_params)
+    for w in range(lo, hi + 1):
+        gap = abs(pinn_param_count(w, num_layer, in_dim=in_dim, out_dim=out_dim) - target_params)
+        if gap < best_gap:
+            best_gap = gap
+            best_w = w
+    return best_w
+
+
 if args.model == 'KAN':
     model = get_model(args).Model(width=[2, 5, 1], grid=5, k=3, grid_eps=1.0, \
                                   noise_scale_base=0.25, device=device).to(device)
@@ -150,6 +177,35 @@ elif args.model == 'PINN_ResFF':
         ff_scale=args.ff_scale,
     ).to(device)
     model.apply(init_weights)
+elif args.model == 'PINN':
+    pinn_hidden_dim = max(2, int(args.pinn_hidden_dim))
+    pinn_num_layer = max(2, int(args.pinn_num_layer))
+    if args.match_pinn_to_resff:
+        # Match plain PINN capacity to the current ResFF default backbone size.
+        ref_model = get_model(type('Args', (), {'model': 'PINN_ResFF'})()).Model(
+            in_dim=2,
+            hidden_dim=512,
+            out_dim=1,
+            num_layer=4,
+            ff_dim=args.ff_dim,
+            ff_scale=args.ff_scale,
+        )
+        target_params = get_n_params(ref_model)
+        del ref_model
+        pinn_hidden_dim = match_pinn_hidden_dim(target_params, pinn_num_layer, in_dim=2, out_dim=1)
+        matched_params = pinn_param_count(pinn_hidden_dim, pinn_num_layer, in_dim=2, out_dim=1)
+        print(
+            f'Capacity-matched PINN enabled: target_params={target_params}, '
+            f'pinn_hidden_dim={pinn_hidden_dim}, pinn_num_layer={pinn_num_layer}, '
+            f'matched_params={matched_params}'
+        )
+    model = get_model(args).Model(
+        in_dim=2,
+        hidden_dim=pinn_hidden_dim,
+        out_dim=1,
+        num_layer=pinn_num_layer,
+    ).to(device)
+    model.apply(init_weights)
 else:
     model = get_model(args).Model(in_dim=2, hidden_dim=512, out_dim=1, num_layer=4).to(device)
     model.apply(init_weights)
@@ -167,38 +223,16 @@ past_iterations = args.past_iterations
 gradient_list_overall = []
 gradient_list_temp = []
 gradient_variance = 1
-switch_iter = max(1, int(args.max_iters * np.clip(args.curriculum_switch_ratio, 0.0, 1.0)))
-
-if args.use_curriculum:
-    print(
-        f'Curriculum enabled: switch@{switch_iter}/{args.max_iters}, '
-        f'stage1(loss={args.curriculum_stage1_loss}, delta={args.curriculum_stage1_delta}, '
-        f'sampling={args.curriculum_stage1_sampling}, sample_num={max(1, args.curriculum_stage1_sample_num)}), '
-        f'stage2(loss={args.curriculum_stage2_loss}, delta={args.curriculum_stage2_delta}, '
-        f'sampling={args.curriculum_stage2_sampling}, sample_num={max(1, args.curriculum_stage2_sample_num)})'
-    )
-else:
-    print(
-        f'Fixed training: loss={args.residual_loss}, delta={args.huber_delta}, '
-        f'sampling={args.sampling_mode}, sample_num={sample_num}'
-    )
+print(
+    f'Fixed training: loss={args.residual_loss}, delta={args.huber_delta}, '
+    f'sampling={args.sampling_mode}, sample_num={sample_num}'
+)
 
 for i in tqdm(range(args.max_iters)):
-    if args.use_curriculum and i < switch_iter:
-        iter_loss_type = args.curriculum_stage1_loss
-        iter_delta = args.curriculum_stage1_delta
-        iter_sampling = args.curriculum_stage1_sampling
-        iter_sample_num = max(1, args.curriculum_stage1_sample_num)
-    elif args.use_curriculum:
-        iter_loss_type = args.curriculum_stage2_loss
-        iter_delta = args.curriculum_stage2_delta
-        iter_sampling = args.curriculum_stage2_sampling
-        iter_sample_num = max(1, args.curriculum_stage2_sample_num)
-    else:
-        iter_loss_type = args.residual_loss
-        iter_delta = args.huber_delta
-        iter_sampling = args.sampling_mode
-        iter_sample_num = sample_num
+    iter_loss_type = args.residual_loss
+    iter_delta = args.huber_delta
+    iter_sampling = args.sampling_mode
+    iter_sample_num = sample_num
 
     ###### Region Optimization with Monte Carlo Approximation ######
     def closure():

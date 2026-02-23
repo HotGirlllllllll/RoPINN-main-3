@@ -198,11 +198,6 @@ INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/ms
 INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm
 INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm
 INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm
-INPUT ../pic/algorithm.png
-INPUT ../pic/algorithm.png
-INPUT ../pic/algorithm.png
-INPUT ../pic/algorithm.png
-INPUT ../pic/algorithm.png
 INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/vf/adobe/times/ptmri7t.vf
 INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/times/ptmri8r.tfm
 INPUT ./sections/experiments.tex
@@ -216,11 +211,6 @@ INPUT tables/table_compute_accounting.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT tables/table_reaction_main.tex
-INPUT ../results/paper/summary_bar.pdf
-INPUT ../results/paper/summary_bar.pdf
-INPUT ../results/paper/summary_bar.pdf
-INPUT ../results/paper/summary_bar.pdf
-INPUT ../results/paper/summary_bar.pdf
 INPUT ../results/1dreaction_PINN_region_optimization_error_paper_curr_pinn.pdf
 INPUT ../results/1dreaction_PINN_region_optimization_error_paper_curr_pinn.pdf
 INPUT ../results/1dreaction_PINN_region_optimization_error_paper_curr_pinn.pdf
