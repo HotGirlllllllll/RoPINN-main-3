@@ -40,6 +40,7 @@ class Model(nn.Module):
         ff_seed=None,
         ff_harmonic_max_k=16.0,
         ff_char_share=0.7,
+        ff_char_only=False,
     ):
         super(Model, self).__init__()
         ff_dim = max(8, int(ff_dim))
@@ -51,16 +52,21 @@ class Model(nn.Module):
         self.ff_seed = None if ff_seed is None else int(ff_seed)
         self.ff_harmonic_max_k = float(ff_harmonic_max_k)
         self.ff_char_share = float(ff_char_share)
+        self.ff_char_only = bool(ff_char_only) and self.use_characteristic
 
         # Fixed random Fourier matrix.
         # Default input is [x, t]. If enabled, characteristic feature [x - c t] is appended.
-        eff_in_dim = int(in_dim) + (1 if self.use_characteristic else 0)
+        eff_in_dim = 1 if self.ff_char_only else (int(in_dim) + (1 if self.use_characteristic else 0))
+        raw_in_dim = int(in_dim) + (1 if self.use_characteristic else 0)
 
         # Allow anisotropic scaling by coordinates to test directional inductive bias.
         sx = float(ff_scale if ff_scale_x is None else ff_scale_x)
         st = float(ff_scale if ff_scale_t is None else ff_scale_t)
         sc = float(ff_scale if ff_scale_char is None else ff_scale_char)
-        scale_vec = [sx, st] + ([sc] if self.use_characteristic else [])
+        if self.ff_char_only:
+            scale_vec = [sc]
+        else:
+            scale_vec = [sx, st] + ([sc] if self.use_characteristic else [])
         scale = torch.tensor(scale_vec, dtype=torch.float32).view(eff_in_dim, 1)
         basis = str(ff_basis).strip().lower()
         if basis == "gaussian":
@@ -82,7 +88,10 @@ class Model(nn.Module):
             # Convection-oriented basis: concentrate harmonics on characteristic x - c t.
             b = torch.zeros(eff_in_dim, ff_dim, dtype=torch.float32)
             max_k = max(1.0, self.ff_harmonic_max_k)
-            if self.use_characteristic and eff_in_dim >= 3:
+            if self.ff_char_only:
+                k_char = torch.linspace(1.0, max_k, ff_dim)
+                b[0, :] = k_char
+            elif self.use_characteristic and eff_in_dim >= 3:
                 char_idx = eff_in_dim - 1
                 x_idx = 0
                 n_char = int(round(ff_dim * min(max(self.ff_char_share, 0.0), 1.0)))
@@ -106,7 +115,7 @@ class Model(nn.Module):
         b = b * scale
         self.register_buffer("fourier_b", b)
 
-        input_width = 2 * ff_dim + (eff_in_dim if self.include_raw_input else 0)
+        input_width = 2 * ff_dim + (raw_in_dim if self.include_raw_input else 0)
         self.input_proj = nn.Linear(input_width, hidden_dim)
         self.input_act = nn.Tanh()
 
@@ -121,12 +130,14 @@ class Model(nn.Module):
     def forward(self, x, t):
         if self.use_characteristic:
             char = x - self.adv_speed * t
-            src = torch.cat((x, t, char), dim=-1)
+            src_full = torch.cat((x, t, char), dim=-1)
+            src = char if self.ff_char_only else src_full
         else:
-            src = torch.cat((x, t), dim=-1)
+            src_full = torch.cat((x, t), dim=-1)
+            src = src_full
         feat = self.fourier_features(src)
         if self.include_raw_input:
-            feat = torch.cat((feat, self.raw_input_scale * src), dim=-1)
+            feat = torch.cat((feat, self.raw_input_scale * src_full), dim=-1)
         h = self.input_act(self.input_proj(feat))
         for block in self.blocks:
             h = block(h)

@@ -32,6 +32,7 @@ parser.add_argument('--raw_input_scale', type=float, default=1.0)
 parser.add_argument('--ff_seed', type=int, default=None)
 parser.add_argument('--ff_harmonic_max_k', type=float, default=16.0)
 parser.add_argument('--ff_char_share', type=float, default=0.7)
+parser.add_argument('--ff_char_only', action='store_true')
 parser.add_argument('--use_characteristic', action='store_true')
 parser.add_argument('--adv_speed', type=float, default=50.0)
 parser.add_argument('--char_aligned_sampling', action='store_true')
@@ -196,6 +197,7 @@ elif args.model == 'PINN_ResFF':
         ff_seed=args.ff_seed,
         ff_harmonic_max_k=args.ff_harmonic_max_k,
         ff_char_share=args.ff_char_share,
+        ff_char_only=args.ff_char_only,
         use_characteristic=args.use_characteristic,
         adv_speed=args.adv_speed,
     ).to(device)
@@ -219,6 +221,7 @@ if args.model == 'PINN_ResFF':
         f'ff_seed={args.ff_seed}, '
         f'ff_harmonic_max_k={args.ff_harmonic_max_k}, '
         f'ff_char_share={args.ff_char_share}, '
+        f'ff_char_only={args.ff_char_only}, '
         f'ff_scale_x={args.ff_scale_x}, ff_scale_t={args.ff_scale_t}, ff_scale_char={args.ff_scale_char}, '
         f'use_characteristic={args.use_characteristic}, adv_speed={args.adv_speed}'
     )
