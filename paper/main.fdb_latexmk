@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex main"] 1771806306 "main.aux" "main.bbl" "main" 1771806306
+["bibtex main"] 1771806306 "main.aux" "main.bbl" "main" 1771807009
   "/usr/share/texlive/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
   "main.aux" 1771806306 5175 56baaa5a85508cbb900f22db1cd024b2 "pdflatex"
   "refs.bib" 1771805990 1642 ccec9e228e1a63ff65f71e0363270953 ""
   (generated)
-  "main.blg"
   "main.bbl"
-["pdflatex"] 1771806306 "main.tex" "main.pdf" "main" 1771806306
+  "main.blg"
+["pdflatex"] 1771806306 "main.tex" "main.pdf" "main" 1771807009
   "../results/paper/summary_bar.pdf" 1771657590 13893 e998ecd725a10123ef4b1d9bac51f2ca ""
   "/etc/texmf/web2c/texmf.cnf" 1771806281 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
@@ -128,7 +128,7 @@
   "tables/table_reaction_mseed.tex" 1771806001 427 339c01de73b4604f12fa6b85e1010aca ""
   "tables/table_wave_mseed.tex" 1771806001 419 29b6d28a60b729a6f6a3a4fdf7c6316a ""
   (generated)
-  "main.pdf"
-  "main.aux"
   "main.out"
   "main.log"
+  "main.pdf"
+  "main.aux"
