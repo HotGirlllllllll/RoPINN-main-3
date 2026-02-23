@@ -37,8 +37,8 @@ and a final linear readout produces $u_\theta(x,t)$. This design preserves the R
 \label{fig:method-workflow}
 \end{figure}
 
-\subsection{Curriculum Training Strategy}
-We additionally implement a two-stage curriculum (\texttt{--use\_curriculum}) with switch iteration
+\subsection{Optional Curriculum Policy (Auxiliary)}
+We additionally implement a two-stage curriculum (\texttt{--use\_curriculum}) as an optional policy with switch iteration
 $T_s=\lfloor \rho T \rfloor$ (\texttt{curriculum\_switch\_ratio}).
 Stage 1 uses conservative regional sampling (smaller \texttt{sample\_num}) for stable initialization, while Stage 2 increases sampling intensity for finer fitting.
 
@@ -48,6 +48,7 @@ In the best reaction configuration, both stages use MSE residual loss with one-s
   \item Stage 2: \texttt{sample\_num=6};
   \item switch ratio $\rho=0.7$.
 \end{itemize}
+In this work, curriculum is treated as a secondary control variable for sensitivity analysis rather than a core innovation claim.
 
 \subsection{Loss Function Choices}
 The code supports MSE, Huber, and pseudo-Huber residual penalties. The main paper configuration uses MSE for all stages to keep consistency with the original baseline and isolate the effect of architectural changes. Boundary and initial terms remain squared losses.

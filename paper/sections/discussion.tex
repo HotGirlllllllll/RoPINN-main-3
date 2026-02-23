@@ -1,23 +1,26 @@
 % !TEX root = ../main.tex
 \section{DISCUSSION}
 \subsection{Why Convection Degrades}
-Convection-dominated transport is sensitive to directional structure and may involve steeper fronts than reaction/wave settings. The current RoPINN-ResFF design uses isotropic Fourier-feature mapping and generic residual blocks, which may emphasize global frequency fitting but underutilize advection-specific inductive bias. This mismatch likely contributes to stable but worse convection errors.
+Convection-dominated transport is sensitive to directional structure and often exhibits sharper fronts than reaction or wave settings. The current RoPINN-ResFF design uses isotropic Fourier-feature mapping and generic residual blocks, which may emphasize global frequency fitting while underutilizing advection-specific inductive bias. This mismatch likely contributes to the consistently worse convection errors.
 
 \subsection{Practical Takeaway}
 The method should be presented as a \textbf{task-conditional enhancement} of RoPINN:
 \begin{itemize}
-  \item strong gains on reaction;
-  \item consistent gains on wave;
-  \item clear degradation on convection under current configuration.
+  \item statistically significant gains on reaction;
+  \item consistent directional gains on wave;
+  \item clear degradation on convection under the current configuration.
 \end{itemize}
-This positioning is scientifically stronger than claiming universal superiority.
+This positioning is scientifically stronger than claiming universal superiority. In addition, reaction budget-sensitivity runs (3000/5000 iterations) indicate that gains persist beyond the 1000-iteration setting.
+
+\subsection{Role of Curriculum}
+Our ablation evidence does not support positioning curriculum as the primary source of gains. In the reaction single-run comparison, RoPINN-ResFF without curriculum is marginally better than the curriculum variant. Therefore, curriculum is retained as an optional training policy and sensitivity axis, while the principal empirical contribution is attributed to the backbone change.
 
 \subsection{Submission-Ready Improvement Plan}
 For a stronger final ICPQC submission, we recommend:
 \begin{itemize}
-  \item increasing seed count to improve statistical power and refine p-value resolution in exact paired tests;
+  \item extending wave/convection seed counts to match the reaction protocol (already 11 seeds) for balanced statistical power across tasks;
   \item additional convection-focused ablations (sampling mode, sample count, and architecture variants);
-  \item fixed compute accounting (iterations and wall-time) to verify fairness across methods.
+  \item extending budget-sensitivity checks from reaction to wave and convection, together with fixed wall-time accounting, to complete cross-task fairness analysis.
 \end{itemize}
 
-These additions can convert the current draft from a strong engineering study into a more complete empirical paper.
+These additions would strengthen the empirical completeness of the final submission.

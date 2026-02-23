@@ -51,7 +51,33 @@ Generated files:
 - `results/paper/tables/stat_tests.csv`
 - `paper/tables/table_stat_tests.tex`
 
+## Generate compute-accounting table (params + wall-time)
+
+```bash
+cd /path/to/RoPINN-main-3
+bash scripts/paper_compute_suite.sh
+```
+
+Multi-seed compute repeats (append mode):
+
+```bash
+cd /path/to/RoPINN-main-3
+RESET_CSV=1 SEED=0 bash scripts/paper_compute_suite.sh
+SEED=1 bash scripts/paper_compute_suite.sh
+SEED=2 bash scripts/paper_compute_suite.sh
+python scripts/paper_make_compute_table.py
+```
+
+Generated files:
+
+- `results/paper/compute/compute_runs.csv`
+- `results/paper/tables/compute_summary.csv`
+- `paper/tables/table_compute_accounting.tex`
+
 ## Notes
 
 - Current draft reports both positive and negative cases.
-- Keep the 4 tables synchronized with logs by re-running `scripts/paper_make_tables.py` before final submission.
+- Keep the tables synchronized with logs by re-running:
+  - `scripts/paper_make_tables.py`
+  - `scripts/paper_significance_tests.py`
+  - `scripts/paper_make_compute_table.py`

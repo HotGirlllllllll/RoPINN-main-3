@@ -210,6 +210,9 @@ INPUT ./sections/experiments.tex
 INPUT ./sections/experiments.tex
 INPUT ./sections/experiments.tex
 INPUT sections/experiments.tex
+INPUT ./tables/table_compute_accounting.tex
+INPUT ./tables/table_compute_accounting.tex
+INPUT tables/table_compute_accounting.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT tables/table_reaction_main.tex
@@ -242,11 +245,14 @@ INPUT ../results/1dwave_PINN_ResFF_region_optimization_error_paper_wave_resff.pd
 INPUT ./tables/table_reaction_mseed.tex
 INPUT ./tables/table_reaction_mseed.tex
 INPUT tables/table_reaction_mseed.tex
+INPUT ./tables/table_reaction_budget.tex
+INPUT ./tables/table_reaction_budget.tex
+INPUT tables/table_reaction_budget.tex
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT ./tables/table_wave_mseed.tex
 INPUT ./tables/table_wave_mseed.tex
 INPUT tables/table_wave_mseed.tex
-INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/vf/adobe/times/ptmr7t.vf
-INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/times/ptmr8r.tfm
 INPUT ./tables/table_convection_mseed.tex
 INPUT ./tables/table_convection_mseed.tex
 INPUT tables/table_convection_mseed.tex
