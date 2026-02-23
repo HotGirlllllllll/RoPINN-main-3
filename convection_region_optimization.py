@@ -26,6 +26,9 @@ parser.add_argument('--ff_scale', type=float, default=1.0)
 parser.add_argument('--ff_scale_x', type=float, default=None)
 parser.add_argument('--ff_scale_t', type=float, default=None)
 parser.add_argument('--ff_scale_char', type=float, default=None)
+parser.add_argument('--ff_basis', type=str, default='gaussian', choices=['gaussian', 'axis'])
+parser.add_argument('--include_raw_input', action='store_true')
+parser.add_argument('--raw_input_scale', type=float, default=1.0)
 parser.add_argument('--use_characteristic', action='store_true')
 parser.add_argument('--adv_speed', type=float, default=50.0)
 parser.add_argument('--char_aligned_sampling', action='store_true')
@@ -38,6 +41,8 @@ parser.add_argument('--w_ic', type=float, default=1.0)
 parser.add_argument('--resample_each_closure', action='store_true')
 parser.add_argument('--warmup_iters', type=int, default=0)
 parser.add_argument('--warmup_lr', type=float, default=1e-3)
+parser.add_argument('--use_transport_ansatz', action='store_true')
+parser.add_argument('--transport_wrap_char', action='store_true')
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -151,6 +156,17 @@ def flatten_gradients(model, device):
     return torch.cat(grads)
 
 
+def predict_u(model, x, t, x_range):
+    if not args.use_transport_ansatz:
+        return model(x, t)
+    # Convection-aware ansatz: represent the solution as a function of characteristic x - c t.
+    x_char = x - args.adv_speed * t
+    if args.transport_wrap_char:
+        x_char = wrap_periodic(x_char, x_range)
+    t_zero = torch.zeros_like(t)
+    return model(x_char, t_zero)
+
+
 if args.model == 'KAN':
     model = get_model(args).Model(width=[2, 5, 5, 1], grid=5, k=3, grid_eps=1.0, \
                                   noise_scale_base=0.25, device=device).to(device)
@@ -171,6 +187,9 @@ elif args.model == 'PINN_ResFF':
         ff_scale_x=args.ff_scale_x,
         ff_scale_t=args.ff_scale_t,
         ff_scale_char=args.ff_scale_char,
+        ff_basis=args.ff_basis,
+        include_raw_input=args.include_raw_input,
+        raw_input_scale=args.raw_input_scale,
         use_characteristic=args.use_characteristic,
         adv_speed=args.adv_speed,
     ).to(device)
@@ -185,6 +204,15 @@ optim_adam = Adam(model.parameters(), lr=float(args.warmup_lr)) if warmup_iters 
 
 print(model)
 print(get_n_params(model))
+if args.model == 'PINN_ResFF':
+    print(
+        'ResFF feature config: '
+        f'ff_basis={args.ff_basis}, '
+        f'include_raw_input={args.include_raw_input}, '
+        f'raw_input_scale={args.raw_input_scale}, '
+        f'ff_scale_x={args.ff_scale_x}, ff_scale_t={args.ff_scale_t}, ff_scale_char={args.ff_scale_char}, '
+        f'use_characteristic={args.use_characteristic}, adv_speed={args.adv_speed}'
+    )
 if warmup_iters > 0:
     print(f'Optimizer schedule: Adam({warmup_iters} iters, lr={args.warmup_lr}) -> LBFGS')
 else:
@@ -220,11 +248,11 @@ for i in tqdm(range(args.max_iters)):
         t_res_region_sample = t_res_region_sample.detach().clone().requires_grad_(True)
 
     def build_loss(x_res_region_sample_local, t_res_region_sample_local):
-        pred_res = model(x_res_region_sample_local, t_res_region_sample_local)
-        pred_left = model(x_left, t_left)
-        pred_right = model(x_right, t_right)
-        pred_upper = model(x_upper, t_upper)
-        pred_lower = model(x_lower, t_lower)
+        pred_res = predict_u(model, x_res_region_sample_local, t_res_region_sample_local, (x_min, x_max))
+        pred_left = predict_u(model, x_left, t_left, (x_min, x_max))
+        pred_right = predict_u(model, x_right, t_right, (x_min, x_max))
+        pred_upper = predict_u(model, x_upper, t_upper, (x_min, x_max))
+        pred_lower = predict_u(model, x_lower, t_lower, (x_min, x_max))
 
         u_x = \
             torch.autograd.grad(pred_res, x_res_region_sample_local, grad_outputs=torch.ones_like(pred_res),
@@ -363,7 +391,7 @@ res_test = torch.tensor(res_test, dtype=torch.float32, requires_grad=True).to(de
 x_test, t_test = res_test[:, ..., 0:1], res_test[:, ..., 1:2]
 
 with torch.no_grad():
-    pred = model(x_test, t_test)[:, 0:1]
+    pred = predict_u(model, x_test, t_test, (x_min, x_max))[:, 0:1]
     pred = pred.cpu().detach().numpy()
 
 pred = pred.reshape(101, 101)
