@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import random
-from torch.optim import LBFGS
+from torch.optim import LBFGS, Adam
 from tqdm import tqdm
 import argparse
 from util import *
@@ -36,6 +36,8 @@ parser.add_argument('--w_res', type=float, default=1.0)
 parser.add_argument('--w_bc', type=float, default=1.0)
 parser.add_argument('--w_ic', type=float, default=1.0)
 parser.add_argument('--resample_each_closure', action='store_true')
+parser.add_argument('--warmup_iters', type=int, default=0)
+parser.add_argument('--warmup_lr', type=float, default=1e-3)
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -177,10 +179,16 @@ else:
     model = get_model(args).Model(in_dim=2, hidden_dim=512, out_dim=1, num_layer=4).to(device)
     model.apply(init_weights)
 
-optim = LBFGS(model.parameters(), line_search_fn='strong_wolfe')
+optim_lbfgs = LBFGS(model.parameters(), line_search_fn='strong_wolfe')
+warmup_iters = max(0, int(args.warmup_iters))
+optim_adam = Adam(model.parameters(), lr=float(args.warmup_lr)) if warmup_iters > 0 else None
 
 print(model)
 print(get_n_params(model))
+if warmup_iters > 0:
+    print(f'Optimizer schedule: Adam({warmup_iters} iters, lr={args.warmup_lr}) -> LBFGS')
+else:
+    print('Optimizer schedule: LBFGS only')
 loss_track = []
 
 # for region optimization
@@ -211,29 +219,7 @@ for i in tqdm(range(args.max_iters)):
         x_res_region_sample = x_res_region_sample.detach().clone().requires_grad_(True)
         t_res_region_sample = t_res_region_sample.detach().clone().requires_grad_(True)
 
-    ###### Region Optimization with Monte Carlo Approximation ######
-    def closure():
-        if args.resample_each_closure:
-            x_res_region_sample_local, t_res_region_sample_local = sample_region_points(
-                x_res,
-                t_res,
-                region_radius=region_radius,
-                sample_num=sample_num,
-                sampling_mode=args.sampling_mode,
-                x_range=(x_min, x_max),
-                t_range=(t_min, t_max),
-                char_aligned_sampling=args.char_aligned_sampling,
-                adv_speed=args.adv_speed,
-                sample_time_scale=max(float(args.sample_time_scale), 1e-6),
-                sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
-                periodic_x_sampling=args.periodic_x_sampling,
-            )
-            x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
-            t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
-        else:
-            x_res_region_sample_local = x_res_region_sample
-            t_res_region_sample_local = t_res_region_sample
-
+    def build_loss(x_res_region_sample_local, t_res_region_sample_local):
         pred_res = model(x_res_region_sample_local, t_res_region_sample_local)
         pred_left = model(x_left, t_left)
         pred_right = model(x_right, t_right)
@@ -262,23 +248,81 @@ for i in tqdm(range(args.max_iters)):
         loss_bc = torch.mean((pred_upper - pred_lower) ** 2)
         loss_ic = torch.mean((pred_left[:, 0] - torch.sin(x_left[:, 0])) ** 2)
 
+        return loss_res, loss_bc, loss_ic
+
+    use_adam_warmup = i < warmup_iters
+    if use_adam_warmup:
+        if args.resample_each_closure:
+            x_res_region_sample_local, t_res_region_sample_local = sample_region_points(
+                x_res,
+                t_res,
+                region_radius=region_radius,
+                sample_num=sample_num,
+                sampling_mode=args.sampling_mode,
+                x_range=(x_min, x_max),
+                t_range=(t_min, t_max),
+                char_aligned_sampling=args.char_aligned_sampling,
+                adv_speed=args.adv_speed,
+                sample_time_scale=max(float(args.sample_time_scale), 1e-6),
+                sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
+                periodic_x_sampling=args.periodic_x_sampling,
+            )
+            x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
+            t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
+        else:
+            x_res_region_sample_local = x_res_region_sample
+            t_res_region_sample_local = t_res_region_sample
+
+        loss_res, loss_bc, loss_ic = build_loss(x_res_region_sample_local, t_res_region_sample_local)
         loss_track.append([loss_res.item(), loss_bc.item(), loss_ic.item()])
-
         loss = args.w_res * loss_res + args.w_bc * loss_bc + args.w_ic * loss_ic
-        optim.zero_grad()
-        loss.backward(retain_graph=True)
+
+        optim_adam.zero_grad()
+        loss.backward()
         gradient_list_temp.append(flatten_gradients(model, device=device).detach().cpu().numpy())
-        return loss
+        optim_adam.step()
+    else:
+        ###### Region Optimization with Monte Carlo Approximation ######
+        def closure():
+            if args.resample_each_closure:
+                x_res_region_sample_local, t_res_region_sample_local = sample_region_points(
+                    x_res,
+                    t_res,
+                    region_radius=region_radius,
+                    sample_num=sample_num,
+                    sampling_mode=args.sampling_mode,
+                    x_range=(x_min, x_max),
+                    t_range=(t_min, t_max),
+                    char_aligned_sampling=args.char_aligned_sampling,
+                    adv_speed=args.adv_speed,
+                    sample_time_scale=max(float(args.sample_time_scale), 1e-6),
+                    sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
+                    periodic_x_sampling=args.periodic_x_sampling,
+                )
+                x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
+                t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
+            else:
+                x_res_region_sample_local = x_res_region_sample
+                t_res_region_sample_local = t_res_region_sample
 
+            loss_res, loss_bc, loss_ic = build_loss(x_res_region_sample_local, t_res_region_sample_local)
+            loss_track.append([loss_res.item(), loss_bc.item(), loss_ic.item()])
 
-    optim.step(closure)
+            loss = args.w_res * loss_res + args.w_bc * loss_bc + args.w_ic * loss_ic
+            optim_lbfgs.zero_grad()
+            loss.backward(retain_graph=True)
+            gradient_list_temp.append(flatten_gradients(model, device=device).detach().cpu().numpy())
+            return loss
+
+        optim_lbfgs.step(closure)
 
     ###### Trust Region Calibration ######
-    gradient_list_overall.append(np.mean(np.array(gradient_list_temp), axis=0))
-    gradient_list_overall = gradient_list_overall[-past_iterations:]
-    gradient_list = np.array(gradient_list_overall)
-    gradient_variance = (np.std(gradient_list, axis=0) / (
-            np.mean(np.abs(gradient_list), axis=0) + 1e-6)).mean()  # normalized variance
+    if len(gradient_list_temp) > 0:
+        gradient_list_overall.append(np.mean(np.array(gradient_list_temp), axis=0))
+        gradient_list_overall = gradient_list_overall[-past_iterations:]
+        gradient_list = np.array(gradient_list_overall)
+        gradient_variance = (np.std(gradient_list, axis=0) / (
+                np.mean(np.abs(gradient_list), axis=0) + 1e-6)).mean()  # normalized variance
     gradient_list_temp = []
     if gradient_variance == 0:
         gradient_variance = 1  # for numerical stability
