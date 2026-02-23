@@ -30,6 +30,13 @@ h_{k+1}=\tanh\left(h_k + W_{k,2}\tanh(W_{k,1}h_k+b_{k,1})+b_{k,2}\right),
 \end{equation}
 and a final linear readout produces $u_\theta(x,t)$. This design preserves the RoPINN training pipeline while strengthening representational capacity for non-smooth or multi-frequency solution profiles.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\linewidth]{../pic/algorithm.png}
+\caption{Overall workflow of the region-optimization pipeline and the proposed RoPINN-ResFF integration.}
+\label{fig:method-workflow}
+\end{figure}
+
 \subsection{Curriculum Training Strategy}
 We additionally implement a two-stage curriculum (\texttt{--use\_curriculum}) with switch iteration
 $T_s=\lfloor \rho T \rfloor$ (\texttt{curriculum\_switch\_ratio}).

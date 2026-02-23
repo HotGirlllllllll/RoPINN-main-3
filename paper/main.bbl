@@ -1,30 +1,23 @@
 \begin{thebibliography}{1}
 
 \bibitem{karniadakis2021pinnreview}
-George~Em Karniadakis, Ioannis~G Kevrekidis, Lu~Lu, Paris Perdikaris, Sifan
-  Wang, and Liu Yang.
+George~Em Karniadakis, Ioannis~G Kevrekidis, Lu~Lu, Paris Perdikaris, Sifan Wang, and Liu Yang.
 \newblock Physics-informed machine learning.
 \newblock {\em Nature Reviews Physics}, 3(6):422--440, 2021.
 
 \bibitem{raissi2019pinn}
 Maziar Raissi, Paris Perdikaris, and George~Em Karniadakis.
-\newblock Physics-informed neural networks: A deep learning framework for
-  solving forward and inverse problems involving nonlinear partial differential
-  equations.
+\newblock Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations.
 \newblock {\em Journal of Computational Physics}, 378:686--707, 2019.
 
 \bibitem{tancik2020fourier}
-Matthew Tancik, Pratul~P Srinivasan, Ben Mildenhall, Sara Fridovich-Keil,
-  Nithin Raghavan, Utkarsh Singhal, Ravi Ramamoorthi, Jonathan~T Barron, and
-  Ren Ng.
-\newblock Fourier features let networks learn high frequency functions in low
-  dimensional domains.
+Matthew Tancik, Pratul~P Srinivasan, Ben Mildenhall, Sara Fridovich-Keil, Nithin Raghavan, Utkarsh Singhal, Ravi Ramamoorthi, Jonathan~T Barron, and Ren Ng.
+\newblock Fourier features let networks learn high frequency functions in low dimensional domains.
 \newblock In {\em Advances in Neural Information Processing Systems}, 2020.
 
 \bibitem{wang2021understanding}
 Sifan Wang, Yujun Teng, and Paris Perdikaris.
-\newblock Understanding and mitigating gradient pathologies in physics-informed
-  neural networks.
+\newblock Understanding and mitigating gradient pathologies in physics-informed neural networks.
 \newblock {\em SIAM Journal on Scientific Computing}, 43(5):A3055--A3081, 2021.
 
 \bibitem{ropinn2024}

@@ -251,6 +251,20 @@ def render_two_row_seed_table(
         fp.write("\n".join(lines))
 
 
+def seed_count_label(baseline_stats: Optional[SeedStats], ours_stats: Optional[SeedStats]) -> str:
+    n_base = baseline_stats.n if baseline_stats else 0
+    n_ours = ours_stats.n if ours_stats else 0
+    if n_base > 0 and n_ours > 0 and n_base == n_ours:
+        return str(n_base)
+    if n_base > 0 and n_ours > 0:
+        return f"{n_base}/{n_ours}"
+    if n_base > 0:
+        return str(n_base)
+    if n_ours > 0:
+        return str(n_ours)
+    return "NA"
+
+
 def ensure_dir(path: str) -> None:
     os.makedirs(path, exist_ok=True)
 
@@ -265,9 +279,13 @@ def write_seed_rows_csv(
     with open(out_csv, mode, newline="", encoding="utf-8") as fp:
         writer = csv.writer(fp)
         if mode == "w":
-            writer.writerow(["task", "method", "log_path", "relative_l1", "relative_l2"])
+            writer.writerow(["task", "method", "seed", "relative_l1", "relative_l2", "log_path"])
         for path, l1, l2 in rows:
-            writer.writerow([task, method, path, l1 if l1 is not None else "", l2 if l2 is not None else ""])
+            m = SEED_PATTERN.search(os.path.basename(path))
+            seed = int(m.group(1)) if m else ""
+            writer.writerow(
+                [task, method, seed, l1 if l1 is not None else "", l2 if l2 is not None else "", path]
+            )
 
 
 def write_seed_summary_csv(out_csv: str, rows: List[List[object]]) -> None:
@@ -359,21 +377,21 @@ def main() -> None:
         "reaction": {
             "baseline": os.path.join(args.results_dir, "mseed_react_base_s*.log"),
             "ours": os.path.join(args.results_dir, "mseed_react_resff_s*.log"),
-            "caption": "Reaction benchmark with 5 seeds (1000 iterations).",
+            "caption_tpl": "Reaction benchmark with {n} seeds (1000 iterations).",
             "label": "tab:reaction-mseed",
             "outfile": os.path.join(tables_dir, "table_reaction_mseed.tex"),
         },
         "wave": {
             "baseline": os.path.join(args.results_dir, "mseed_wave_base_s*.log"),
             "ours": os.path.join(args.results_dir, "mseed_wave_resff_s*.log"),
-            "caption": "Wave benchmark with 5 seeds (1000 iterations).",
+            "caption_tpl": "Wave benchmark with {n} seeds (1000 iterations).",
             "label": "tab:wave-mseed",
             "outfile": os.path.join(tables_dir, "table_wave_mseed.tex"),
         },
         "convection": {
             "baseline": os.path.join(args.results_dir, "mseed_conv_base_s*.log"),
             "ours": os.path.join(args.results_dir, "mseed_conv_resff_s*.log"),
-            "caption": "Convection benchmark with 5 seeds (1000 iterations).",
+            "caption_tpl": "Convection benchmark with {n} seeds (1000 iterations).",
             "label": "tab:conv-mseed",
             "outfile": os.path.join(tables_dir, "table_convection_mseed.tex"),
         },
@@ -392,9 +410,10 @@ def main() -> None:
 
         base_stats = calc_seed_stats(base_rows)
         ours_stats = calc_seed_stats(ours_rows)
+        caption = cfg["caption_tpl"].format(n=seed_count_label(base_stats, ours_stats))
         render_two_row_seed_table(
             output_path=cfg["outfile"],
-            caption=cfg["caption"],
+            caption=caption,
             label=cfg["label"],
             baseline_name="Baseline PINN",
             ours_name="RoPINN-ResFF (ours)",

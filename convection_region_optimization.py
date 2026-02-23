@@ -10,15 +10,10 @@ import argparse
 from util import *
 from model_dict import get_model
 
-seed = 0
-np.random.seed(seed)
-random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-
 parser = argparse.ArgumentParser('Training Region Optimization')
 parser.add_argument('--model', type=str, default='pinn')
 parser.add_argument('--device', type=str, default='auto')
+parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--initial_region', type=float, default=1e-4)
 parser.add_argument('--sample_num', type=int, default=1)
 parser.add_argument('--past_iterations', type=int, default=5)
@@ -29,6 +24,15 @@ parser.add_argument('--huber_delta', type=float, default=0.05)
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
+
+seed = int(args.seed)
+np.random.seed(seed)
+random.seed(seed)
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
 device = resolve_device(args.device)
 run_tag = ''.join(ch if ch.isalnum() or ch in ('-', '_', '.') else '_' for ch in args.run_tag.strip())
 
