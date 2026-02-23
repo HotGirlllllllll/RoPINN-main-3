@@ -38,6 +38,8 @@ class Model(nn.Module):
         include_raw_input=False,
         raw_input_scale=1.0,
         ff_seed=None,
+        ff_harmonic_max_k=16.0,
+        ff_char_share=0.7,
     ):
         super(Model, self).__init__()
         ff_dim = max(8, int(ff_dim))
@@ -47,6 +49,8 @@ class Model(nn.Module):
         self.include_raw_input = bool(include_raw_input)
         self.raw_input_scale = float(raw_input_scale)
         self.ff_seed = None if ff_seed is None else int(ff_seed)
+        self.ff_harmonic_max_k = float(ff_harmonic_max_k)
+        self.ff_char_share = float(ff_char_share)
 
         # Fixed random Fourier matrix.
         # Default input is [x, t]. If enabled, characteristic feature [x - c t] is appended.
@@ -74,6 +78,29 @@ class Model(nn.Module):
                 axis = j % eff_in_dim
                 level = 1.0 + float(j // eff_in_dim)
                 b[axis, j] = level
+        elif basis == "char_harmonic":
+            # Convection-oriented basis: concentrate harmonics on characteristic x - c t.
+            b = torch.zeros(eff_in_dim, ff_dim, dtype=torch.float32)
+            max_k = max(1.0, self.ff_harmonic_max_k)
+            if self.use_characteristic and eff_in_dim >= 3:
+                char_idx = eff_in_dim - 1
+                x_idx = 0
+                n_char = int(round(ff_dim * min(max(self.ff_char_share, 0.0), 1.0)))
+                n_char = min(max(1, n_char), ff_dim - 1 if ff_dim > 1 else 1)
+                n_x = ff_dim - n_char
+
+                k_char = torch.linspace(1.0, max_k, n_char)
+                b[char_idx, :n_char] = k_char
+                if n_x > 0:
+                    # Keep a small x-only branch for robustness near boundaries.
+                    k_x = torch.linspace(1.0, max(1.0, max_k * 0.25), n_x)
+                    b[x_idx, n_char:] = k_x
+            else:
+                # Fallback to low-order axis harmonics.
+                for j in range(ff_dim):
+                    axis = j % eff_in_dim
+                    level = 1.0 + float(j // eff_in_dim)
+                    b[axis, j] = min(level, max_k)
         else:
             raise ValueError(f"Unknown ff_basis: {ff_basis}")
         b = b * scale
