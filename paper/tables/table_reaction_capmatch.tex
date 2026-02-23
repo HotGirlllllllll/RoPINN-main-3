@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Capacity-matched control on reaction (single run, seed 0, 1000 iterations).}
+\label{tab:reaction-capmatch}
+\begin{tabular}{lccc}
+\toprule
+Method & Params & Relative L1 & Relative L2 \\
+\midrule
+PINN (small, width=512) & 527,361 & 0.043673 & 0.075895 \\
+PINN (capacity-matched) & 1,643,481 & 0.037791 & 0.070529 \\
+RoPINN-ResFF (ours) & 1,642,497 & \textbf{0.001947} & \textbf{0.004269} \\
+\bottomrule
+\end{tabular}
+\end{table}
+

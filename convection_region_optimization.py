@@ -28,6 +28,10 @@ parser.add_argument('--ff_scale_t', type=float, default=None)
 parser.add_argument('--ff_scale_char', type=float, default=None)
 parser.add_argument('--use_characteristic', action='store_true')
 parser.add_argument('--adv_speed', type=float, default=50.0)
+parser.add_argument('--char_aligned_sampling', action='store_true')
+parser.add_argument('--sample_time_scale', type=float, default=1.0)
+parser.add_argument('--sample_ortho_scale', type=float, default=0.0)
+parser.add_argument('--periodic_x_sampling', action='store_true')
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -82,17 +86,51 @@ def init_weights(m):
         m.bias.data.fill_(0.0)
 
 
-def sample_region_points(x_base, t_base, region_radius, sample_num, sampling_mode, x_range, t_range):
+def wrap_periodic(x, x_range):
+    x_min, x_max = x_range
+    width = x_max - x_min
+    if width <= 0:
+        return x
+    return torch.remainder(x - x_min, width) + x_min
+
+
+def sample_region_points(
+    x_base,
+    t_base,
+    region_radius,
+    sample_num,
+    sampling_mode,
+    x_range,
+    t_range,
+    char_aligned_sampling=False,
+    adv_speed=50.0,
+    sample_time_scale=1.0,
+    sample_ortho_scale=0.0,
+    periodic_x_sampling=False,
+):
     x_samples = []
     t_samples = []
     for _ in range(sample_num):
-        if sampling_mode == 'symmetric':
-            x_noise = (2.0 * torch.rand_like(x_base) - 1.0) * region_radius
-            t_noise = (2.0 * torch.rand_like(t_base) - 1.0) * region_radius
+        if char_aligned_sampling:
+            if sampling_mode == 'symmetric':
+                t_noise = (2.0 * torch.rand_like(t_base) - 1.0) * (region_radius * sample_time_scale)
+            else:
+                t_noise = torch.rand_like(t_base) * (region_radius * sample_time_scale)
+            x_noise = adv_speed * t_noise
+            if sample_ortho_scale > 0:
+                x_noise = x_noise + (2.0 * torch.rand_like(x_base) - 1.0) * (region_radius * sample_ortho_scale)
         else:
-            x_noise = torch.rand_like(x_base) * region_radius
-            t_noise = torch.rand_like(t_base) * region_radius
-        x_samples.append(torch.clamp(x_base + x_noise, min=x_range[0], max=x_range[1]))
+            if sampling_mode == 'symmetric':
+                x_noise = (2.0 * torch.rand_like(x_base) - 1.0) * region_radius
+                t_noise = (2.0 * torch.rand_like(t_base) - 1.0) * region_radius
+            else:
+                x_noise = torch.rand_like(x_base) * region_radius
+                t_noise = torch.rand_like(t_base) * region_radius
+        x_raw = x_base + x_noise
+        if periodic_x_sampling:
+            x_samples.append(wrap_periodic(x_raw, x_range))
+        else:
+            x_samples.append(torch.clamp(x_raw, min=x_range[0], max=x_range[1]))
         t_samples.append(torch.clamp(t_base + t_noise, min=t_range[0], max=t_range[1]))
     return torch.cat(x_samples, dim=0), torch.cat(t_samples, dim=0)
 
@@ -161,6 +199,11 @@ for i in tqdm(range(args.max_iters)):
             sampling_mode=args.sampling_mode,
             x_range=(x_min, x_max),
             t_range=(t_min, t_max),
+            char_aligned_sampling=args.char_aligned_sampling,
+            adv_speed=args.adv_speed,
+            sample_time_scale=max(float(args.sample_time_scale), 1e-6),
+            sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
+            periodic_x_sampling=args.periodic_x_sampling,
         )
         pred_res = model(x_res_region_sample, t_res_region_sample)
         pred_left = model(x_left, t_left)
@@ -177,7 +220,7 @@ for i in tqdm(range(args.max_iters)):
                                 retain_graph=True,
                                 create_graph=True)[0]
 
-        residual = u_t + 50 * u_x
+        residual = u_t + args.adv_speed * u_x
         if args.residual_loss == 'huber':
             loss_res = F.huber_loss(
                 residual,
@@ -256,7 +299,7 @@ pred = pred.reshape(101, 101)
 def u_res(x, t):
     print(x.shape)
     print(t.shape)
-    return np.sin(x - 50 * t)
+    return np.sin(x - args.adv_speed * t)
 
 
 res_test, _, _, _, _ = get_data([x_min, x_max], [t_min, t_max], 101, 101)

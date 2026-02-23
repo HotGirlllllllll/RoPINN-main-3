@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex main"] 1771826002.13642 "main.aux" "main.bbl" "main" 1771826002.76314 0
+["bibtex main"] 1771833666.73589 "main.aux" "main.bbl" "main" 1771833667.34916 0
   "./refs.bib" 1771738468.99661 1642 ccec9e228e1a63ff65f71e0363270953 ""
   "/Users/hot/Library/TinyTeX/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1771826002.64252 6853 c37952333348d3fa142e21bf0d2860f2 "pdflatex"
+  "main.aux" 1771833667.26419 7718 a087bb8452508144d97fc77c5e6e969c "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1771826002.15681 "main.tex" "main.pdf" "main" 1771826002.76333 0
+["pdflatex"] 1771833666.75343 "main.tex" "main.pdf" "main" 1771833667.34932 0
   "../results/1dreaction_PINN_ResFF_region_optimization_error_paper_resff_only.pdf" 1771657670.57685 13018 7de8d15a5c2e201c849f6da4393d2a34 ""
   "../results/1dreaction_PINN_region_optimization_error_paper_curr_pinn.pdf" 1771657670.62478 22140 c579d1f2c50d86b8743a280d9b7edfcb ""
   "../results/1dwave_PINN_ResFF_region_optimization_error_paper_wave_resff.pdf" 1771662475.58783 19505 4e856275b0cd02bcd860fd5cae1d56af ""
@@ -113,19 +113,20 @@
   "/Users/hot/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1771732705 92935 ab22f987f93038b61e05dc32d7c07157 ""
   "/Users/hot/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1771732724 2236363 9f8bce20af81216c2efc37ba0957f6fd ""
   "/Users/hot/Library/TinyTeX/texmf.cnf" 1771732677 637 edd806fb06a89761a6034e1968af9017 ""
-  "main.aux" 1771826002.64252 6853 c37952333348d3fa142e21bf0d2860f2 "pdflatex"
-  "main.bbl" 1771826002.15419 1442 1fb18e0b58c84cefd7b7eda4a68f27ba "bibtex main"
-  "main.out" 1771826002.6445 4146 38e62cd9f2ebd3ecbca0495159a33cb3 "pdflatex"
-  "main.tex" 1771825707.95661 3399 07cfd2dd0299510ca2fdc60cc732705e ""
-  "sections/conclusion.tex" 1771825750.42602 949 37433aae0a141d66ba6200954bd168b1 ""
-  "sections/discussion.tex" 1771825742.16574 1622 b92cb4e89afdd56b9243439d76d83ebc ""
-  "sections/experiments.tex" 1771825807.66544 7002 cb7102223697601b4bb72b850082114e ""
-  "sections/intro.tex" 1771825715.33488 1745 4661b5ee1ed39ec3204ae0bcf9f79951 ""
+  "main.aux" 1771833667.26419 7718 a087bb8452508144d97fc77c5e6e969c "pdflatex"
+  "main.bbl" 1771833666.75146 1442 1fb18e0b58c84cefd7b7eda4a68f27ba "bibtex main"
+  "main.out" 1771833667.26514 4765 21dbfd218fee62a258094a0ceb384ebd "pdflatex"
+  "main.tex" 1771832674.57339 3718 a5b2bc65d07b747b48988590cc5d4d1b ""
+  "sections/conclusion.tex" 1771832683.10112 1125 0f61c7e32f54d250d4efa00d2823b9d4 ""
+  "sections/discussion.tex" 1771833620.02153 2499 06984912121585a93f973501b85aa5e0 ""
+  "sections/experiments.tex" 1771833592.36434 8588 fd19c7253d3724ec898f2df2fa9e79a3 ""
+  "sections/intro.tex" 1771832631.60867 1993 47fb2724358daf75156037482bf72084 ""
   "sections/method.tex" 1771825724.26499 3451 8e8fdd5a36fd2e207a51d1b344402674 ""
   "sections/related.tex" 1771739603.75755 1464 b37b4e794b832141fa7ac45b4f86ec82 ""
-  "tables/table_compute_accounting.tex" 1771824181.36428 409 801774a07886a8fbabe9df5bbc0f9c5f ""
+  "tables/table_compute_accounting.tex" 1771833581.60304 718 2bdba7eb615b97c0cab58f97d9543a84 ""
   "tables/table_convection_mseed.tex" 1771825949.03941 434 72be87d728d2b96a1e68f935a8a988ca ""
   "tables/table_reaction_budget.tex" 1771823327.11386 622 7c0ac364b495862f1c956a3810784ff4 ""
+  "tables/table_reaction_capmatch.tex" 1771827683.76827 465 ddf9c31fe410a1f9bb40ff79c6b864b8 ""
   "tables/table_reaction_main.tex" 1771825888.43999 424 435a5cb1186d4628c095834fc016113d ""
   "tables/table_reaction_mseed.tex" 1771825933.66124 428 0426339e052da5e16b3ee0dd10495f49 ""
   "tables/table_stat_tests.tex" 1771825995.69986 823 4c51c1c465b0f074bdd61c1cf7f14acc ""

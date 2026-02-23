@@ -1,13 +1,17 @@
 \begin{table}[H]
 \centering
-\caption{Compute accounting on the reaction benchmark (1000 iterations, seed 0, same CUDA device).}
+\caption{Compute accounting across tasks (1000 iterations, same CUDA device). Wall-time is estimated from the final tqdm throughput reported in each corresponding run log.}
 \label{tab:compute-accounting}
 \begin{tabular}{llccc}
 \toprule
 Task & Method & Params & Wall-time (s) & Sec/iter \\
 \midrule
-Reaction & PINN baseline & 527,361 & 335.0 & 0.3350 \\
-Reaction & RoPINN-ResFF (ours) & 1,642,497 & 445.0 & 0.4450 \\
+Reaction & PINN baseline & 527,361 & 317.5 & 0.3175 \\
+Reaction & RoPINN-ResFF (ours) & 1,642,497 & 1000.0 & 1.0000 \\
+Wave & PINN baseline & 527,361 & 1110.0 & 1.1100 \\
+Wave & RoPINN-ResFF (ours) & 1,642,497 & 2170.0 & 2.1700 \\
+Convection & PINN baseline & 527,361 & 609.8 & 0.6098 \\
+Convection & RoPINN-ResFF (ours) & 1,642,497 & 1120.0 & 1.1200 \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -29,10 +29,10 @@ for seed in 0 1 2; do
     "python -u \"${ROOT_DIR}/convection_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${seed} --max_iters ${MAX_ITERS} --ff_dim 64 --ff_scale 1.0"
 
   run_case "conv_resff_aniso_s${seed}" \
-    "python -u \"${ROOT_DIR}/convection_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${seed} --max_iters ${MAX_ITERS} --ff_dim 64 --ff_scale 1.0 --ff_scale_x 1.0 --ff_scale_t 0.1"
+    "python -u \"${ROOT_DIR}/convection_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${seed} --max_iters ${MAX_ITERS} --ff_dim 64 --ff_scale 1.0 --ff_scale_x 1.0 --ff_scale_t 0.1 --periodic_x_sampling"
 
   run_case "conv_resff_char_s${seed}" \
-    "python -u \"${ROOT_DIR}/convection_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${seed} --max_iters ${MAX_ITERS} --ff_dim 64 --ff_scale 1.0 --ff_scale_x 1.0 --ff_scale_t 0.1 --use_characteristic --adv_speed 50.0 --ff_scale_char 1.0"
+    "python -u \"${ROOT_DIR}/convection_region_optimization.py\" --model PINN_ResFF --device ${DEVICE} --seed ${seed} --max_iters ${MAX_ITERS} --ff_dim 64 --ff_scale 1.0 --ff_scale_x 1.0 --ff_scale_t 0.1 --use_characteristic --adv_speed 50.0 --ff_scale_char 1.0 --char_aligned_sampling --sample_time_scale 1.0 --sample_ortho_scale 0.1 --periodic_x_sampling"
 done
 
 python - <<'PY'
@@ -52,4 +52,3 @@ for name,pat in groups:
         l1.append(float(p1.findall(t)[-1])); l2.append(float(p2.findall(t)[-1]))
     print(f"{name:6s}  L1={st.mean(l1):.6f}±{st.pstdev(l1):.6f}  L2={st.mean(l2):.6f}±{st.pstdev(l2):.6f}")
 PY
-

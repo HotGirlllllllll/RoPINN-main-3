@@ -208,6 +208,9 @@ INPUT sections/experiments.tex
 INPUT ./tables/table_compute_accounting.tex
 INPUT ./tables/table_compute_accounting.tex
 INPUT tables/table_compute_accounting.tex
+INPUT ./tables/table_reaction_capmatch.tex
+INPUT ./tables/table_reaction_capmatch.tex
+INPUT tables/table_reaction_capmatch.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT ./tables/table_reaction_main.tex
 INPUT tables/table_reaction_main.tex

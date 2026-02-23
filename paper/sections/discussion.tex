@@ -12,5 +12,11 @@ The method should be presented as a \textbf{task-conditional enhancement} of RoP
 \end{itemize}
 This positioning is scientifically stronger than claiming universal superiority. In addition, reaction budget-sensitivity runs (3000/5000 iterations) indicate that gains persist beyond the 1000-iteration setting.
 
+\subsection{On Asymmetric Evaluation}
+Given finite compute resources, we prioritize reaction as the confirmatory task (11 seeds with formal significance tests) and treat wave/convection as transfer checks (5 seeds, directional interpretation). Compute accounting is reported for all three tasks under the same 1000-iteration protocol, but confirmatory statistical claims remain restricted to reaction.
+
+\subsection{Capacity vs. Architecture}
+On reaction, a direct capacity-matched control further clarifies the source of improvement. Under nearly identical parameter counts (PINN: 1,643,481 vs. RoPINN-ResFF: 1,642,497), RoPINN-ResFF still substantially outperforms the matched PINN. Therefore, the observed gain cannot be attributed only to parameter expansion and is consistent with a genuine architecture effect.
+
 \subsection{Limitations and Future Work}
-The current empirical scope remains limited in three aspects. First, seed counts are unbalanced across tasks (reaction uses more paired seeds than wave/convection), which limits cross-task statistical symmetry. Second, convection underperformance is currently characterized but not yet fully resolved by a validated task-specific inductive bias. Third, compute profiling is currently centered on reaction and should be extended to wave and convection for complete cross-task fairness accounting. Addressing these points is part of our ongoing work.
+The current empirical scope remains limited in three aspects. First, seed counts are unbalanced across tasks (reaction uses more paired seeds than wave/convection), which limits cross-task statistical symmetry. Second, convection underperformance is currently characterized but not yet fully resolved by a validated task-specific inductive bias. Third, compute accounting is currently estimated from final progress-bar throughput in single-device runs; a stronger systems-level study should add repeated wall-time profiling under controlled GPU isolation. Addressing these points is part of our ongoing work.
