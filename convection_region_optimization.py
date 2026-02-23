@@ -29,6 +29,7 @@ parser.add_argument('--ff_scale_char', type=float, default=None)
 parser.add_argument('--ff_basis', type=str, default='gaussian', choices=['gaussian', 'axis'])
 parser.add_argument('--include_raw_input', action='store_true')
 parser.add_argument('--raw_input_scale', type=float, default=1.0)
+parser.add_argument('--ff_seed', type=int, default=None)
 parser.add_argument('--use_characteristic', action='store_true')
 parser.add_argument('--adv_speed', type=float, default=50.0)
 parser.add_argument('--char_aligned_sampling', action='store_true')
@@ -190,6 +191,7 @@ elif args.model == 'PINN_ResFF':
         ff_basis=args.ff_basis,
         include_raw_input=args.include_raw_input,
         raw_input_scale=args.raw_input_scale,
+        ff_seed=args.ff_seed,
         use_characteristic=args.use_characteristic,
         adv_speed=args.adv_speed,
     ).to(device)
@@ -210,6 +212,7 @@ if args.model == 'PINN_ResFF':
         f'ff_basis={args.ff_basis}, '
         f'include_raw_input={args.include_raw_input}, '
         f'raw_input_scale={args.raw_input_scale}, '
+        f'ff_seed={args.ff_seed}, '
         f'ff_scale_x={args.ff_scale_x}, ff_scale_t={args.ff_scale_t}, ff_scale_char={args.ff_scale_char}, '
         f'use_characteristic={args.use_characteristic}, adv_speed={args.adv_speed}'
     )

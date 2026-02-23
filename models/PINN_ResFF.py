@@ -37,6 +37,7 @@ class Model(nn.Module):
         ff_basis='gaussian',
         include_raw_input=False,
         raw_input_scale=1.0,
+        ff_seed=None,
     ):
         super(Model, self).__init__()
         ff_dim = max(8, int(ff_dim))
@@ -45,6 +46,7 @@ class Model(nn.Module):
         self.adv_speed = float(adv_speed)
         self.include_raw_input = bool(include_raw_input)
         self.raw_input_scale = float(raw_input_scale)
+        self.ff_seed = None if ff_seed is None else int(ff_seed)
 
         # Fixed random Fourier matrix.
         # Default input is [x, t]. If enabled, characteristic feature [x - c t] is appended.
@@ -58,7 +60,13 @@ class Model(nn.Module):
         scale = torch.tensor(scale_vec, dtype=torch.float32).view(eff_in_dim, 1)
         basis = str(ff_basis).strip().lower()
         if basis == "gaussian":
-            b = torch.randn(eff_in_dim, ff_dim)
+            if self.ff_seed is None:
+                b = torch.randn(eff_in_dim, ff_dim)
+            else:
+                # Keep Fourier basis deterministic across run seeds to reduce variance.
+                gen = torch.Generator(device="cpu")
+                gen.manual_seed(self.ff_seed)
+                b = torch.randn(eff_in_dim, ff_dim, generator=gen)
         elif basis == "axis":
             # Deterministic axis-aligned frequency basis to reduce seed sensitivity.
             b = torch.zeros(eff_in_dim, ff_dim, dtype=torch.float32)
