@@ -39,6 +39,18 @@ Generated statistics files:
 
 If your multi-seed logs are missing locally, the multi-seed tables will be generated with `NA`. Re-run the script on the machine that has `results/mseed_*.log`.
 
+## Generate statistical tests (p-value + 95% CI)
+
+```bash
+cd /path/to/RoPINN-main-3
+python scripts/paper_significance_tests.py
+```
+
+Generated files:
+
+- `results/paper/tables/stat_tests.csv`
+- `paper/tables/table_stat_tests.tex`
+
 ## Notes
 
 - Current draft reports both positive and negative cases.

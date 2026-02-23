@@ -1,0 +1,26 @@
+# ICPQC Submission Checklist
+
+- [ ] Replace author placeholders in `paper/main.tex`:
+  - `Author One`, `Author Two`
+  - affiliations
+  - corresponding email
+- [ ] Rebuild final PDF:
+  - `cd paper && latexmk -pdf main.tex`
+- [ ] Confirm statistics tables exist:
+  - `paper/tables/table_reaction_main.tex`
+  - `paper/tables/table_reaction_mseed.tex`
+  - `paper/tables/table_wave_mseed.tex`
+  - `paper/tables/table_convection_mseed.tex`
+  - `paper/tables/table_stat_tests.tex`
+- [ ] Confirm source statistics files exist:
+  - `results/paper/tables/seed_rows.csv`
+  - `results/paper/tables/seed_summary.csv`
+  - `results/paper/tables/stat_tests.csv`
+- [ ] Verify manuscript claim style:
+  - no claim of universal superiority
+  - no strict significance claim at `alpha=0.05` with current `n=5`
+  - state task-conditional behavior
+- [ ] Prepare submission package:
+  - final PDF
+  - source/appendix (if required by venue)
+  - code link or availability statement
