@@ -32,6 +32,9 @@ parser.add_argument('--char_aligned_sampling', action='store_true')
 parser.add_argument('--sample_time_scale', type=float, default=1.0)
 parser.add_argument('--sample_ortho_scale', type=float, default=0.0)
 parser.add_argument('--periodic_x_sampling', action='store_true')
+parser.add_argument('--w_res', type=float, default=1.0)
+parser.add_argument('--w_bc', type=float, default=1.0)
+parser.add_argument('--w_ic', type=float, default=1.0)
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -235,7 +238,7 @@ for i in tqdm(range(args.max_iters)):
 
         loss_track.append([loss_res.item(), loss_bc.item(), loss_ic.item()])
 
-        loss = loss_res + loss_bc + loss_ic
+        loss = args.w_res * loss_res + args.w_bc * loss_bc + args.w_ic * loss_ic
         optim.zero_grad()
         loss.backward(retain_graph=True)
         gradient_list_temp.append(flatten_gradients(model, device=device).detach().cpu().numpy())
