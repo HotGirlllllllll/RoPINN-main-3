@@ -21,13 +21,37 @@ class ResidualBlock(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, in_dim, hidden_dim, out_dim, num_layer, ff_dim=64, ff_scale=1.0):
+    def __init__(
+        self,
+        in_dim,
+        hidden_dim,
+        out_dim,
+        num_layer,
+        ff_dim=64,
+        ff_scale=1.0,
+        ff_scale_x=None,
+        ff_scale_t=None,
+        use_characteristic=False,
+        adv_speed=50.0,
+        ff_scale_char=None,
+    ):
         super(Model, self).__init__()
         ff_dim = max(8, int(ff_dim))
         ff_scale = float(ff_scale)
+        self.use_characteristic = bool(use_characteristic)
+        self.adv_speed = float(adv_speed)
 
-        # Fixed random Fourier matrix. Input: [x, t] -> features of size 2*ff_dim.
-        b = torch.randn(in_dim, ff_dim) * ff_scale
+        # Fixed random Fourier matrix.
+        # Default input is [x, t]. If enabled, characteristic feature [x - c t] is appended.
+        eff_in_dim = int(in_dim) + (1 if self.use_characteristic else 0)
+
+        # Allow anisotropic scaling by coordinates to test directional inductive bias.
+        sx = float(ff_scale if ff_scale_x is None else ff_scale_x)
+        st = float(ff_scale if ff_scale_t is None else ff_scale_t)
+        sc = float(ff_scale if ff_scale_char is None else ff_scale_char)
+        scale_vec = [sx, st] + ([sc] if self.use_characteristic else [])
+        scale = torch.tensor(scale_vec, dtype=torch.float32).view(eff_in_dim, 1)
+        b = torch.randn(eff_in_dim, ff_dim) * scale
         self.register_buffer("fourier_b", b)
 
         self.input_proj = nn.Linear(2 * ff_dim, hidden_dim)
@@ -42,7 +66,11 @@ class Model(nn.Module):
         return torch.cat([torch.sin(proj), torch.cos(proj)], dim=-1)
 
     def forward(self, x, t):
-        src = torch.cat((x, t), dim=-1)
+        if self.use_characteristic:
+            char = x - self.adv_speed * t
+            src = torch.cat((x, t, char), dim=-1)
+        else:
+            src = torch.cat((x, t), dim=-1)
         feat = self.fourier_features(src)
         h = self.input_act(self.input_proj(feat))
         for block in self.blocks:
