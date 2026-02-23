@@ -1,0 +1,46 @@
+% !TEX root = ../main.tex
+\section{METHODOLOGY}
+\subsection{RoPINN Background}
+Given a PDE residual operator $\mathcal{R}[u](x,t)$, PINN training minimizes a weighted sum of residual, boundary, and initial losses:
+\begin{equation}
+\mathcal{L}(\theta)=\mathcal{L}_{res}+\mathcal{L}_{bc}+\mathcal{L}_{ic}.
+\end{equation}
+RoPINN replaces single-point residual evaluation with region-wise expectation around each collocation point $z_i=(x_i,t_i)$:
+\begin{equation}
+\mathcal{L}_{res}^{region} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{E}_{\xi \sim \mathcal{U}(\mathcal{B}_{r_i})} \left[\ell\left(\mathcal{R}[u_\theta](z_i+\xi)\right)\right],
+\end{equation}
+where $\mathcal{B}_{r_i}$ is a local trust region and $\ell(\cdot)$ is the residual penalty. In code, this expectation is approximated with Monte Carlo sampling (\texttt{sample\_num}) and one-sided or symmetric perturbation (\texttt{sampling\_mode}).
+
+Trust-region scaling follows gradient-statistics calibration:
+\begin{equation}
+r = \mathrm{clip}\left(\frac{r_0}{v_g}, 0, r_{max}\right),
+\end{equation}
+where $v_g$ is the normalized gradient-variance statistic computed from recent iterations. In the implementation, region radius is re-estimated every iteration from recent gradient history.
+
+\subsection{RoPINN-ResFF Backbone}
+The baseline PINN uses a plain tanh MLP. We replace it with a residual Fourier-feature network (\texttt{PINN\_ResFF}):
+\begin{equation}
+\phi(x,t) = \left[\sin(2\pi [x,t]B),\;\cos(2\pi [x,t]B)\right],
+\end{equation}
+where $B\in\mathbb{R}^{2\times d_{ff}}$ is a fixed random matrix scaled by \texttt{ff\_scale}.
+
+Features are projected to hidden width 512, followed by residual blocks:
+\begin{equation}
+h_{k+1}=\tanh\left(h_k + W_{k,2}\tanh(W_{k,1}h_k+b_{k,1})+b_{k,2}\right),
+\end{equation}
+and a final linear readout produces $u_\theta(x,t)$. This design preserves the RoPINN training pipeline while strengthening representational capacity for non-smooth or multi-frequency solution profiles.
+
+\subsection{Curriculum Training Strategy}
+We additionally implement a two-stage curriculum (\texttt{--use\_curriculum}) with switch iteration
+$T_s=\lfloor \rho T \rfloor$ (\texttt{curriculum\_switch\_ratio}).
+Stage 1 uses conservative regional sampling (smaller \texttt{sample\_num}) for stable initialization, while Stage 2 increases sampling intensity for finer fitting.
+
+In the best reaction configuration, both stages use MSE residual loss with one-sided sampling:
+\begin{itemize}
+  \item Stage 1: \texttt{sample\_num=1};
+  \item Stage 2: \texttt{sample\_num=6};
+  \item switch ratio $\rho=0.7$.
+\end{itemize}
+
+\subsection{Loss Function Choices}
+The code supports MSE, Huber, and pseudo-Huber residual penalties. The main paper configuration uses MSE for all stages to keep consistency with the original baseline and isolate the effect of architectural changes. Boundary and initial terms remain squared losses.

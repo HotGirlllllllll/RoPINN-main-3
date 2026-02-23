@@ -1,0 +1,67 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,top=2.54cm,bottom=4.94cm,left=1.93cm,right=1.93cm]{geometry}
+\usepackage{times}
+\usepackage{amsmath,amsfonts}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{1.5em}
+\pagestyle{empty}
+\linespread{1.0}
+\renewcommand{\texttt}[1]{\textnormal{#1}}
+\renewcommand{\path}[1]{\textnormal{#1}}
+
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}
+  {1.5ex plus 0.5ex minus 0.2ex}
+  {1.2ex}
+  {\normalfont\bfseries\centering\fontsize{11pt}{13pt}\selectfont}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}
+  {1.2ex plus 0.3ex minus 0.1ex}
+  {0.8ex}
+  {\normalfont\bfseries\fontsize{10pt}{12pt}\selectfont}}
+\renewcommand\@seccntformat[1]{\csname the#1\endcsname.\quad}
+\makeatother
+
+\renewcommand{\refname}{REFERENCES}
+
+\begin{document}
+\thispagestyle{empty}
+
+\begin{center}
+{\fontsize{16pt}{18pt}\selectfont\bfseries
+RoPINN-ResFF: Task-Conditional Enhancement of Region-Optimized PINNs with Residual Fourier Features\par}
+\vspace{0.9em}
+{\fontsize{12pt}{14pt}\selectfont
+Author One$^{a,*}$, Author Two$^{b}$\par}
+\vspace{0.5em}
+{\fontsize{12pt}{14pt}\selectfont
+$^{a}$School/Institute Name, City, Postal Code, Country\par
+$^{b}$School/Institute Name, City, Postal Code, Country\par
+$^{*}$Corresponding author: your-email@domain.com\par}
+\end{center}
+
+\vspace{0.8em}
+\begin{center}
+{\fontsize{11pt}{13pt}\selectfont\bfseries ABSTRACT}
+\end{center}
+\noindent
+Physics-informed neural networks (PINNs) often suffer from spectral bias and unstable optimization under finite collocation sampling. RoPINN addresses part of this issue by optimizing PDE constraints over local regions instead of isolated points. In this paper, we study an architecture-level extension of RoPINN, called RoPINN-ResFF, which combines a residual multilayer perceptron backbone with fixed random Fourier feature embedding, and we further implement an optional two-stage curriculum over region-sampling intensity. Under a unified 1000-iteration budget, we report 5-seed results on reaction, wave, and convection. On reaction, mean L1/L2 improve from 0.217351/0.233924 (baseline) to 0.002978/0.007432 (ours). On wave, mean L1/L2 improve from 0.060335/0.062967 to 0.011916/0.012183. On convection, mean L1/L2 degrade from 0.619487/0.699839 to 1.015963/1.039029. Therefore, the evidence supports task-conditional improvement rather than universal gains across PDE types. We report both positive and negative outcomes and provide reproducible scripts and artifacts for direct verification.
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} physics-informed neural networks, RoPINN, Fourier features, PDE solver, region optimization.
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/method}
+\input{sections/experiments}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}

@@ -1,0 +1,15 @@
+\begin{table}[H]
+\centering
+\caption{Main comparison on 1D reaction (1000 iterations, single run).}
+\label{tab:reaction-main}
+\begin{tabular}{lcc}
+\toprule
+Method & Relative L1 & Relative L2 \\
+\midrule
+Original RoPINN PINN baseline (backup) & 0.016627 & 0.030553 \\
+Current PINN (modified branch) & 0.043673 & 0.075895 \\
+RoPINN-ResFF (ours) & \textbf{0.001947} & \textbf{0.004269} \\
+RoPINN-ResFF + curriculum (ours) & 0.001968 & 0.004304 \\
+\bottomrule
+\end{tabular}
+\end{table}

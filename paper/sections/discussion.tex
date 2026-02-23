@@ -1,0 +1,23 @@
+% !TEX root = ../main.tex
+\section{DISCUSSION}
+\subsection{Why Convection Degrades}
+Convection-dominated transport is sensitive to directional structure and may involve steeper fronts than reaction/wave settings. The current RoPINN-ResFF design uses isotropic Fourier-feature mapping and generic residual blocks, which may emphasize global frequency fitting but underutilize advection-specific inductive bias. This mismatch likely contributes to stable but worse convection errors.
+
+\subsection{Practical Takeaway}
+The method should be presented as a \textbf{task-conditional enhancement} of RoPINN:
+\begin{itemize}
+  \item strong gains on reaction;
+  \item consistent gains on wave;
+  \item clear degradation on convection under current configuration.
+\end{itemize}
+This positioning is scientifically stronger than claiming universal superiority.
+
+\subsection{Submission-Ready Improvement Plan}
+For a stronger final ICPQC submission, we recommend:
+\begin{itemize}
+  \item adding statistical tests and confidence intervals on the existing multi-seed results;
+  \item additional convection-focused ablations (sampling mode, sample count, and architecture variants);
+  \item fixed compute accounting (iterations and wall-time) to verify fairness across methods.
+\end{itemize}
+
+These additions can convert the current draft from a strong engineering study into a more complete empirical paper.

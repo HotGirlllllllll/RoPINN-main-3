@@ -1,0 +1,14 @@
+% !TEX root = ../main.tex
+\section{INTRODUCTION}
+Physics-informed neural networks (PINNs) provide a mesh-free framework for solving partial differential equations (PDEs) by constraining a neural field to satisfy governing physics and boundary/initial conditions \cite{raissi2019pinn}. In practice, however, PINN training is performed on finite collocation sets, while PDE constraints are continuous-domain requirements. This mismatch can cause hidden violations between sampled points and unstable convergence.
+
+RoPINN mitigates this issue by replacing pointwise residual training with region-wise optimization around collocation points, estimated through Monte Carlo sampling and trust-region calibration \cite{ropinn2024}. While this strengthens training signals in local neighborhoods, the final performance still depends strongly on the backbone representation and optimization dynamics.
+
+This paper focuses on that remaining bottleneck. We propose \textbf{RoPINN-ResFF}, a drop-in backbone upgrade for RoPINN that combines residual MLP blocks with random Fourier feature embedding. We also include an optional two-stage curriculum over regional sampling intensity. The design goal is to improve representational capacity and training stability without changing RoPINN's core region-optimization principle.
+
+\textbf{Contributions.}
+\begin{itemize}
+  \item We introduce a residual Fourier-feature backbone that integrates directly into existing RoPINN scripts and training loops.
+  \item We provide a curriculum-based training schedule compatible with region optimization and evaluate its incremental effect.
+  \item We report reproducible empirical results under fixed iteration budgets, including both successful transfer (reaction, wave) and failure cases (convection), to define the practical boundary of the method.
+\end{itemize}

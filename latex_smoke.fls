@@ -1,0 +1,21 @@
+PWD /Users/hot/Desktop/RoPINN-main 2
+INPUT /Users/hot/Library/TinyTeX/texmf.cnf
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/web2c/texmf.cnf
+INPUT /Users/hot/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt
+INPUT /tmp/latex_smoke.tex
+OUTPUT latex_smoke.log
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+INPUT ./latex_smoke.aux
+INPUT ./latex_smoke.aux
+INPUT latex_smoke.aux
+OUTPUT latex_smoke.aux
+OUTPUT latex_smoke.pdf
+INPUT /Users/hot/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map
+INPUT latex_smoke.aux
+INPUT /Users/hot/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb

@@ -1,0 +1,17 @@
+# Fdb version 4
+["pdflatex"] 1771736858.14087 "/tmp/latex_smoke.tex" "latex_smoke.pdf" "latex_smoke" 1771736858.2225 0
+  "/Users/hot/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
+  "/Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls" 1748806692 20144 b966087dda3b194755eb460d32e2ef75 ""
+  "/Users/hot/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo" 1748806692 8448 686612a86f0e04f41ea577f5ec7e83d8 ""
+  "/Users/hot/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def" 1761248321 30662 bfd6e864f4ffc5018b0e2b6260c3181c ""
+  "/Users/hot/Library/TinyTeX/texmf-dist/web2c/texmf.cnf" 1749313668 42213 4e2ca030e8e2640502016e9e45868dcb ""
+  "/Users/hot/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1771732705 92935 ab22f987f93038b61e05dc32d7c07157 ""
+  "/Users/hot/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1771732724 2236363 9f8bce20af81216c2efc37ba0957f6fd ""
+  "/Users/hot/Library/TinyTeX/texmf.cnf" 1771732677 637 edd806fb06a89761a6034e1968af9017 ""
+  "/tmp/latex_smoke.tex" 1771736856.45147 68 a9a86725e5b8a7369c517be9c1de42c8 ""
+  "latex_smoke.aux" 1771736858.20646 32 3985256e7290058c681f74d7a3565a19 "pdflatex"
+  (generated)
+  "latex_smoke.aux"
+  "latex_smoke.log"
+  "latex_smoke.pdf"
+  (rewritten before read)

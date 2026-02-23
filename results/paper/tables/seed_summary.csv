@@ -1,0 +1,7 @@
+task,method,n,l1_mean,l1_std,l2_mean,l2_std,l1_reduction_vs_baseline_percent,l2_reduction_vs_baseline_percent
+reaction,baseline,,,,,,0.0,0.0
+reaction,ours,,,,,,,
+wave,baseline,,,,,,0.0,0.0
+wave,ours,,,,,,,
+convection,baseline,,,,,,0.0,0.0
+convection,ours,,,,,,,

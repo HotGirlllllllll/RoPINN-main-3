@@ -1,0 +1,9 @@
+% !TEX root = ../main.tex
+\section{RELATED WORK}
+\textbf{PINN foundations.} PINNs enforce PDE constraints through automatic differentiation and joint optimization of residual, boundary, and initial losses \cite{raissi2019pinn}. Broader reviews summarize rapid developments in physics-informed machine learning and practical challenges in optimization/generalization \cite{karniadakis2021pinnreview}. Subsequent studies also highlighted gradient imbalance and stiffness \cite{wang2021understanding}.
+
+\textbf{Region-based optimization.} RoPINN extends pointwise constraints to local neighborhoods and calibrates trust-region scale via gradient statistics, improving hidden-constraint generalization between collocation points \cite{ropinn2024}. Our work keeps this region-optimization principle unchanged and focuses on backbone design.
+
+\textbf{Spectral representation in implicit networks.} Fourier feature embeddings alleviate low-frequency bias and improve approximation of oscillatory patterns in coordinate-based models \cite{tancik2020fourier}. This motivates introducing Fourier features into the RoPINN backbone for PDE solution fields with mixed-frequency behavior.
+
+\textbf{Position of this work.} Unlike methods that modify only sampling or only loss balancing, we propose a \emph{drop-in architecture upgrade} for the RoPINN training pipeline, and evaluate its task-level transfer behavior (reaction/wave/convection) under a fixed optimization budget.
