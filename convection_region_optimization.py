@@ -35,6 +35,7 @@ parser.add_argument('--periodic_x_sampling', action='store_true')
 parser.add_argument('--w_res', type=float, default=1.0)
 parser.add_argument('--w_bc', type=float, default=1.0)
 parser.add_argument('--w_ic', type=float, default=1.0)
+parser.add_argument('--resample_each_closure', action='store_true')
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -191,9 +192,8 @@ gradient_list_temp = []
 gradient_variance = 1
 
 for i in tqdm(range(args.max_iters)):
-    ###### Region Optimization with Monte Carlo Approximation ######
-    def closure():
-        region_radius = np.clip(initial_region / gradient_variance, a_min=0, a_max=0.01)
+    region_radius = np.clip(initial_region / gradient_variance, a_min=0, a_max=0.01)
+    if not args.resample_each_closure:
         x_res_region_sample, t_res_region_sample = sample_region_points(
             x_res,
             t_res,
@@ -208,18 +208,44 @@ for i in tqdm(range(args.max_iters)):
             sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
             periodic_x_sampling=args.periodic_x_sampling,
         )
-        pred_res = model(x_res_region_sample, t_res_region_sample)
+        x_res_region_sample = x_res_region_sample.detach().clone().requires_grad_(True)
+        t_res_region_sample = t_res_region_sample.detach().clone().requires_grad_(True)
+
+    ###### Region Optimization with Monte Carlo Approximation ######
+    def closure():
+        if args.resample_each_closure:
+            x_res_region_sample_local, t_res_region_sample_local = sample_region_points(
+                x_res,
+                t_res,
+                region_radius=region_radius,
+                sample_num=sample_num,
+                sampling_mode=args.sampling_mode,
+                x_range=(x_min, x_max),
+                t_range=(t_min, t_max),
+                char_aligned_sampling=args.char_aligned_sampling,
+                adv_speed=args.adv_speed,
+                sample_time_scale=max(float(args.sample_time_scale), 1e-6),
+                sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
+                periodic_x_sampling=args.periodic_x_sampling,
+            )
+            x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
+            t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
+        else:
+            x_res_region_sample_local = x_res_region_sample
+            t_res_region_sample_local = t_res_region_sample
+
+        pred_res = model(x_res_region_sample_local, t_res_region_sample_local)
         pred_left = model(x_left, t_left)
         pred_right = model(x_right, t_right)
         pred_upper = model(x_upper, t_upper)
         pred_lower = model(x_lower, t_lower)
 
         u_x = \
-            torch.autograd.grad(pred_res, x_res_region_sample, grad_outputs=torch.ones_like(pred_res),
+            torch.autograd.grad(pred_res, x_res_region_sample_local, grad_outputs=torch.ones_like(pred_res),
                                 retain_graph=True,
                                 create_graph=True)[0]
         u_t = \
-            torch.autograd.grad(pred_res, t_res_region_sample, grad_outputs=torch.ones_like(pred_res),
+            torch.autograd.grad(pred_res, t_res_region_sample_local, grad_outputs=torch.ones_like(pred_res),
                                 retain_graph=True,
                                 create_graph=True)[0]
 
