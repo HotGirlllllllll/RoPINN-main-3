@@ -39,6 +39,8 @@ parser.add_argument('--char_aligned_sampling', action='store_true')
 parser.add_argument('--sample_time_scale', type=float, default=1.0)
 parser.add_argument('--sample_ortho_scale', type=float, default=0.0)
 parser.add_argument('--periodic_x_sampling', action='store_true')
+parser.add_argument('--upwind_bias_alpha', type=float, default=0.0)
+parser.add_argument('--upwind_bias_time_scale', type=float, default=1.0)
 parser.add_argument('--w_res', type=float, default=1.0)
 parser.add_argument('--w_bc', type=float, default=1.0)
 parser.add_argument('--w_ic', type=float, default=1.0)
@@ -122,7 +124,20 @@ def sample_region_points(
     sample_time_scale=1.0,
     sample_ortho_scale=0.0,
     periodic_x_sampling=False,
+    upwind_bias_alpha=0.0,
+    upwind_bias_time_scale=1.0,
 ):
+    bias_alpha = max(0.0, float(upwind_bias_alpha))
+    bias_time = max(0.0, float(upwind_bias_time_scale))
+    if bias_alpha > 0.0:
+        # Upwind-biased center: move along backward characteristic.
+        # For u_t + c u_x = 0, upstream direction is (dx, dt) = (c * dt, dt) with dt < 0.
+        t_center = t_base - bias_alpha * region_radius * bias_time
+        x_center = x_base + adv_speed * (t_center - t_base)
+    else:
+        x_center = x_base
+        t_center = t_base
+
     x_samples = []
     t_samples = []
     for _ in range(sample_num):
@@ -141,12 +156,12 @@ def sample_region_points(
             else:
                 x_noise = torch.rand_like(x_base) * region_radius
                 t_noise = torch.rand_like(t_base) * region_radius
-        x_raw = x_base + x_noise
+        x_raw = x_center + x_noise
         if periodic_x_sampling:
             x_samples.append(wrap_periodic(x_raw, x_range))
         else:
             x_samples.append(torch.clamp(x_raw, min=x_range[0], max=x_range[1]))
-        t_samples.append(torch.clamp(t_base + t_noise, min=t_range[0], max=t_range[1]))
+        t_samples.append(torch.clamp(t_center + t_noise, min=t_range[0], max=t_range[1]))
     return torch.cat(x_samples, dim=0), torch.cat(t_samples, dim=0)
 
 
@@ -238,6 +253,13 @@ past_iterations = args.past_iterations
 gradient_list_overall = []
 gradient_list_temp = []
 gradient_variance = 1
+print(
+    'Sampling config: '
+    f'sampling_mode={args.sampling_mode}, sample_num={sample_num}, '
+    f'char_aligned_sampling={args.char_aligned_sampling}, '
+    f'upwind_bias_alpha={args.upwind_bias_alpha}, upwind_bias_time_scale={args.upwind_bias_time_scale}, '
+    f'periodic_x_sampling={args.periodic_x_sampling}'
+)
 
 for i in tqdm(range(args.max_iters)):
     region_radius = np.clip(initial_region / gradient_variance, a_min=0, a_max=0.01)
@@ -255,6 +277,8 @@ for i in tqdm(range(args.max_iters)):
             sample_time_scale=max(float(args.sample_time_scale), 1e-6),
             sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
             periodic_x_sampling=args.periodic_x_sampling,
+            upwind_bias_alpha=args.upwind_bias_alpha,
+            upwind_bias_time_scale=args.upwind_bias_time_scale,
         )
         x_res_region_sample = x_res_region_sample.detach().clone().requires_grad_(True)
         t_res_region_sample = t_res_region_sample.detach().clone().requires_grad_(True)
@@ -306,6 +330,8 @@ for i in tqdm(range(args.max_iters)):
                 sample_time_scale=max(float(args.sample_time_scale), 1e-6),
                 sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
                 periodic_x_sampling=args.periodic_x_sampling,
+                upwind_bias_alpha=args.upwind_bias_alpha,
+                upwind_bias_time_scale=args.upwind_bias_time_scale,
             )
             x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
             t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
@@ -338,6 +364,8 @@ for i in tqdm(range(args.max_iters)):
                     sample_time_scale=max(float(args.sample_time_scale), 1e-6),
                     sample_ortho_scale=max(float(args.sample_ortho_scale), 0.0),
                     periodic_x_sampling=args.periodic_x_sampling,
+                    upwind_bias_alpha=args.upwind_bias_alpha,
+                    upwind_bias_time_scale=args.upwind_bias_time_scale,
                 )
                 x_res_region_sample_local = x_res_region_sample_local.detach().clone().requires_grad_(True)
                 t_res_region_sample_local = t_res_region_sample_local.detach().clone().requires_grad_(True)
