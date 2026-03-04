@@ -10,14 +10,14 @@ set -euo pipefail
 # - ours: current branch PINN_ResFF
 #
 # Example:
-#   TASKS="reaction" SEED_START=5 SEED_END=14 DEVICE=cuda:0 \
+#   TASKS="reaction" SEED_START=5 SEED_END=14 DEVICE=auto \
 #   BASELINE_DIR="/root/autodl-tmp/RoPINN-main-3/RoPINN-main 3" \
 #   bash scripts/paper_extend_multiseed.sh
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RESULTS_DIR="${ROOT_DIR}/results"
 BASELINE_DIR="${BASELINE_DIR:-${ROOT_DIR}/RoPINN-main 3}"
-DEVICE="${DEVICE:-cuda:0}"
+DEVICE="${DEVICE:-auto}"
 MPL_DIR="${MPLCONFIGDIR:-/tmp/mpl}"
 SEED_START="${SEED_START:-5}"
 SEED_END="${SEED_END:-9}"

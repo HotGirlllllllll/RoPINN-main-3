@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RESULTS_DIR="${ROOT_DIR}/results/conv_hypothesis"
-DEVICE="${DEVICE:-cuda:0}"
+DEVICE="${DEVICE:-auto}"
 MPL_DIR="${MPLCONFIGDIR:-/tmp/mpl}"
 MAX_ITERS="${MAX_ITERS:-1000}"
 

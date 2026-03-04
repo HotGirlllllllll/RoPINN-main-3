@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RESULTS_DIR="${ROOT_DIR}/results"
 BASELINE_DIR="${BASELINE_DIR:-${ROOT_DIR}/RoPINN-main 3}"
-DEVICE="${DEVICE:-cuda:0}"
+DEVICE="${DEVICE:-auto}"
 MAX_ITERS="${MAX_ITERS:-1000}"
 MPL_DIR="${MPLCONFIGDIR:-/tmp/mpl}"
 

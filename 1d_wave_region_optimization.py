@@ -21,6 +21,11 @@ parser.add_argument('--max_iters', type=int, default=1000)
 parser.add_argument('--sampling_mode', type=str, default='one_sided', choices=['one_sided', 'symmetric'])
 parser.add_argument('--residual_loss', type=str, default='mse', choices=['mse', 'huber'])
 parser.add_argument('--huber_delta', type=float, default=0.05)
+parser.add_argument('--ff_dim', type=int, default=64)
+parser.add_argument('--ff_scale', type=float, default=1.0)
+parser.add_argument('--ff_seed', type=int, default=None)
+parser.add_argument('--include_raw_input', action='store_true')
+parser.add_argument('--raw_input_scale', type=float, default=1.0)
 parser.add_argument('--run_tag', type=str, default='')
 parser.add_argument('--paper_outputs', action='store_true')
 args = parser.parse_args()
@@ -35,6 +40,16 @@ if torch.cuda.is_available():
 
 device = resolve_device(args.device)
 run_tag = ''.join(ch if ch.isalnum() or ch in ('-', '_', '.') else '_' for ch in args.run_tag.strip())
+former_models = {
+    'PINNsFormer',
+    'PINNsFormer_Enc_Only',
+    'PINNsFormer_FF',
+    'PINNsFormer_Enc_Only_FF',
+}
+former_ff_models = {
+    'PINNsFormer_FF',
+    'PINNsFormer_Enc_Only_FF',
+}
 
 
 def tagged_path(path):
@@ -49,7 +64,7 @@ t_min, t_max = 0.0, 1.0
 res, b_left, b_right, b_upper, b_lower = get_data([x_min, x_max], [t_min, t_max], 101, 101)
 res_test, _, _, _, _ = get_data([x_min, x_max], [t_min, t_max], 101, 101)
 
-if args.model == 'PINNsFormer' or args.model == 'PINNsFormer_Enc_Only':
+if args.model in former_models:
     res = make_time_sequence(res, num_step=5, step=1e-4)
     b_left = make_time_sequence(b_left, num_step=5, step=1e-4)
     b_right = make_time_sequence(b_right, num_step=5, step=1e-4)
@@ -103,10 +118,63 @@ def flatten_gradients(model, device):
 if args.model == 'KAN':
     model = get_model(args).Model(width=[2, 5, 5, 1], grid=5, k=3, grid_eps=1.0, \
                                   noise_scale_base=0.25, device=device).to(device)
+elif args.model == 'KAN_FF':
+    model = get_model(args).Model(
+        width=[2, 5, 5, 1],
+        grid=5,
+        k=3,
+        grid_eps=1.0,
+        noise_scale_base=0.25,
+        device=device,
+        ff_dim=args.ff_dim,
+        ff_scale=args.ff_scale,
+        ff_seed=args.ff_seed,
+        include_raw_input=args.include_raw_input,
+        raw_input_scale=args.raw_input_scale,
+    ).to(device)
 elif args.model == 'QRes':
     model = get_model(args).Model(in_dim=2, hidden_dim=256, out_dim=1, num_layer=2).to(device)
     model.apply(init_weights)
-elif args.model == 'PINNsFormer' or args.model == 'PINNsFormer_Enc_Only':
+elif args.model == 'QRes_FF':
+    model = get_model(args).Model(
+        in_dim=2,
+        hidden_dim=256,
+        out_dim=1,
+        num_layer=2,
+        ff_dim=args.ff_dim,
+        ff_scale=args.ff_scale,
+        ff_seed=args.ff_seed,
+        include_raw_input=args.include_raw_input,
+        raw_input_scale=args.raw_input_scale,
+    ).to(device)
+    model.apply(init_weights)
+elif args.model == 'FLS_FF':
+    model = get_model(args).Model(
+        in_dim=2,
+        hidden_dim=512,
+        out_dim=1,
+        num_layer=4,
+        ff_dim=args.ff_dim,
+        ff_scale=args.ff_scale,
+        ff_seed=args.ff_seed,
+        include_raw_input=args.include_raw_input,
+        raw_input_scale=args.raw_input_scale,
+    ).to(device)
+    model.apply(init_weights)
+elif args.model in former_ff_models:
+    model = get_model(args).Model(
+        in_dim=2,
+        hidden_dim=32,
+        out_dim=1,
+        num_layer=1,
+        ff_dim=args.ff_dim,
+        ff_scale=args.ff_scale,
+        ff_seed=args.ff_seed,
+        include_raw_input=args.include_raw_input,
+        raw_input_scale=args.raw_input_scale,
+    ).to(device)
+    model.apply(init_weights)
+elif args.model in former_models:
     model = get_model(args).Model(in_dim=2, hidden_dim=32, out_dim=1, num_layer=1).to(device)
     model.apply(init_weights)
 else:
@@ -234,7 +302,7 @@ if args.paper_outputs:
     plt.savefig(tagged_path(f'./results/1dwave_{args.model}_region_optimization_loss.pdf'), bbox_inches='tight')
 
 # Visualize PINNs
-if args.model == 'PINNsFormer' or args.model == 'PINNsFormer_Enc_Only':
+if args.model in former_models:
     res_test = make_time_sequence(res_test, num_step=5, step=1e-4)
 
 res_test = torch.tensor(res_test, dtype=torch.float32, requires_grad=True).to(device)
