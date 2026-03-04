@@ -1,0 +1,7 @@
+model,task,baseline_loss,baseline_rmae,baseline_rmse,ours_loss,ours_rmae,ours_rmse,promotion_loss_pct,promotion_rmae_pct,promotion_rmse_pct,win,metrics_path
+PINN,reaction,4.7e-05,0.056,0.095,1.0055e-06,0.0025728986,0.0062386567,97.86063829787234,95.40553821428571,93.43299294736842,Win,/root/autodl-tmp/RoPINN-main-3/results/1dreaction_PINN_ResFF_region_metrics_table1rw_reaction_pinn_s0_i1000.csv
+PINN,wave,0.0015,0.063,0.064,0.0004467952,0.0087950775,0.0091729702,70.21365333333334,86.03955952380953,85.66723406250001,Win,/root/autodl-tmp/RoPINN-main-3/results/1dwave_PINN_ResFF_region_metrics_table1rw_wave_pinn_s0_i1000.csv
+QRes,reaction,9e-06,0.007,0.013,8.267e-07,0.0082034519,0.0237028113,90.81444444444445,-17.192170000000004,-82.32931769230771,Fail,/root/autodl-tmp/RoPINN-main-3/results/1dreaction_QRes_FF_region_metrics_table1rw_reaction_qres_s0_i1000.csv
+QRes,wave,0.017,0.309,0.321,4.34672e-05,0.0059368718,0.0058095603,99.74431058823528,98.07868226537217,98.19016813084112,Win,/root/autodl-tmp/RoPINN-main-3/results/1dwave_QRes_FF_region_metrics_table1rw_wave_qres_s0_i1000.csv
+FLS,reaction,2.2e-05,0.022,0.039,1.177e-06,0.0051070791,0.0126298895,94.65,76.78600409090907,67.61566794871796,Win,/root/autodl-tmp/RoPINN-main-3/results/1dreaction_FLS_FF_region_metrics_table1rw_reaction_fls_s0_i1000.csv
+FLS,wave,0.00015,0.016,0.017,0.0002006817,0.0087112746,0.0087812664,-33.787800000000004,45.55453375,48.34549176470589,Win,/root/autodl-tmp/RoPINN-main-3/results/1dwave_FLS_FF_region_metrics_table1rw_wave_fls_s0_i1000.csv
